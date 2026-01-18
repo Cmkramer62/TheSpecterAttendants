@@ -86,7 +86,7 @@ public class Thermometer : MonoBehaviour {
         source.pitch = .8f;
         source.pitch += level / 30f;
        // Debug.Log(level / 10f);
-        source.PlayOneShot(beep);
+       if(gameObject.activeSelf) source.PlayOneShot(beep);
     }
 
 }
