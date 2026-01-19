@@ -9,9 +9,11 @@ public class Enemy : MonoBehaviour {
     public float health, walkPointMin, walkPointRange, timeBetweenAttacks, attackRange, walkSpeed, runSpeed, chaseMeter = 100f, rotationSpeed = 5f;
     public int damage, invisibilityOdds = 3, pauseChance = 4;
     public ParticleSystem hitEffect;
-    public bool invisible = false, freezingAura = false, attractedToSound = false, allowedToMove = true;
+    public bool invisible = false, freezingAura = false, attractedToSound = false, allowedToMove = true, geistAura = false;
     public SkinnedMeshRenderer[] meshRenderers;
     public GameObject[] horns;
+    public ParticleSystem geistlightAura;
+    public GameObject shadow;
 
     public enum Mode { chasing, patrolling }
     public Mode currentMode;
@@ -21,7 +23,7 @@ public class Enemy : MonoBehaviour {
 
     public Death deathScript;
     public Vector3 walkPoint, playerLastSeen;
-    public Animator animator;
+    public Animator animator, shadowAnimator;
 
 
     #region private vars
@@ -110,7 +112,7 @@ public class Enemy : MonoBehaviour {
             }
 
             animator.SetFloat("Velocity", agent.velocity.magnitude);
-
+            shadowAnimator.SetFloat("Velocity", agent.velocity.magnitude);
             #region Angular Rotation
             Vector3 desired = agent.desiredVelocity;
 
@@ -158,6 +160,8 @@ public class Enemy : MonoBehaviour {
 
         waitingForScream = true;
         animator.Play("Scream");
+        shadowAnimator.Play("Scream");
+
         float priorSpeed = agent.speed;
         agent.speed = 0;
         yield return new WaitForSeconds(1.533f);
@@ -235,14 +239,37 @@ public class Enemy : MonoBehaviour {
 
     public void InvertVisibility() {
         invisible = !invisible;
-        foreach(SkinnedMeshRenderer meshRen in meshRenderers) {
-            meshRen.enabled = !invisible;
+        if(invisible) {
+            foreach(SkinnedMeshRenderer meshRen in meshRenderers) {
+                meshRen.enabled = false;
+            }
+            foreach(GameObject horn in horns) {
+                horn.SetActive(false);
+            }
         }
-        foreach(GameObject horn in horns) {
-            horn.SetActive(!invisible);
-        }
+        
+        if(geistAura && !invisible) geistlightAura.Play();
+        else if(geistAura) geistlightAura.Stop();
         ambientSource.volume = invisible ? 0 : 1;
+        StartCoroutine(ShadowAnimTimer(invisible));
     }
+
+    private IEnumerator ShadowAnimTimer(bool leave) {
+        shadow.SetActive(true);
+        if(!leave) shadow.GetComponent<Animator>().Play("ShadowAnim 0");
+        yield return new WaitForSeconds(1f);
+        shadow.SetActive(false);
+
+        if(!invisible) {
+            foreach(SkinnedMeshRenderer meshRen in meshRenderers) {
+                meshRen.enabled = true;
+            }
+            foreach(GameObject horn in horns) {
+                horn.SetActive(true);
+            }
+        }
+    }
+
 
     private void AttackPlayer() {
         agent.SetDestination(transform.position);
@@ -273,6 +300,8 @@ public class Enemy : MonoBehaviour {
     private void ResetAttack() {
         alreadyAttacked = false;
         animator.SetBool("Attack", false);
+        shadowAnimator.SetBool("Attack", false);
+
     }
 
     public void TakeDamage(float damage) {
@@ -297,6 +326,7 @@ public class Enemy : MonoBehaviour {
 
     private IEnumerator DestroyEnemyCoroutine() {
         animator.SetBool("Dead", true);
+        shadowAnimator.SetBool("Dead", true);
         yield return new WaitForSeconds(1.8f);
         Destroy(gameObject);
     }

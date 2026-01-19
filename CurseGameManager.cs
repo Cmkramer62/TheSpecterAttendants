@@ -97,6 +97,7 @@ public class CurseGameManager : MonoBehaviour {
         var goalCurseSpecific = goalCurse.GetComponentInChildren<CursedObject>().cursesList[2];
         if(goalCurseSpecific == CursedObject.CursedTypes.Glowing) {
             ghostGeistParticles.SetActive(true);
+            ghostAnimator.transform.parent.gameObject.GetComponent<Enemy>().geistAura = true;
         }
         else if(goalCurseSpecific == CursedObject.CursedTypes.EMF) {
             ghostAnimator.runtimeAnimatorController = floatingController;
