@@ -15,6 +15,8 @@ public class GameTimer : MonoBehaviour {
     public AudioSource source;
     public AudioClip[] warningClipsA, warningClipsB, warningClipsC;
 
+    public Material smokeMaterial;
+
     private Vignette vignetteComponent;
     private int totalTimeStored, stageOne, stageTwo, stageThree;
 
@@ -41,7 +43,12 @@ public class GameTimer : MonoBehaviour {
         Debug.Log(t + " " + vignetteComponent.intensity.value);
         if(secondsOfTimer <= stageOne) vignetteComponent.intensity.value = Mathf.Lerp(0.203f, 1f, t);
         */
-        if(totalTimeLimit <= stageOne) vignetteComponent.intensity.value = Mathf.Lerp( vignetteComponent.intensity.value, 1f, Time.deltaTime / totalTimeLimit);
+        if(totalTimeLimit <= stageOne) {
+            vignetteComponent.intensity.value = Mathf.Lerp(vignetteComponent.intensity.value, 1f, Time.deltaTime / totalTimeLimit);
+            Color c = smokeMaterial.color;
+            c.a = Mathf.Lerp(c.a, 1f, Time.deltaTime / totalTimeLimit * .25f);
+            smokeMaterial.color = c;
+        }
     }
 
     private IEnumerator Tick() {

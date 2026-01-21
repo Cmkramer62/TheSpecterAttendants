@@ -25,9 +25,9 @@ public class Death : MonoBehaviour {
         realGhost.SetActive(false);
         jumpscareObject.SetActive(true);
         source.PlayOneShot(jumpscareClip, scareVolume);
-        yield return new WaitForSeconds(.166666f);
-        scareCamera.transform.position = cameraParent.transform.position;
-        yield return new WaitForSeconds(2f);
+        //yield return new WaitForSeconds(.166666f);
+        //scareCamera.transform.position = cameraParent.transform.position;
+        yield return new WaitForSeconds(1f);
         SceneManager.LoadScene(SceneManager.GetActiveScene().buildIndex);
     }
 
