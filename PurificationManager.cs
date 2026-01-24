@@ -37,7 +37,7 @@ public class PurificationManager : MonoBehaviour {
         cursedObjectScript.purificationParticles.Play();
         cursedObjectScript.purificationSlider.maxValue = ritualTimerMax;
 
-        StartCoroutine(PurificationTimer(canvas));
+        //StartCoroutine(PurificationTimer(canvas));
         if(ghostScript.invisible) ghostScript.InvertVisibility();
         ghostVisionScript.visibilityOverride = true;
         DisplayQuestion();
