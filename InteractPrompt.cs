@@ -57,6 +57,7 @@ public class InteractPrompt : MonoBehaviour {
         else {
             textPromptScript.GetComponent<PurificationManager>().DisplayQuestion();
             textPromptScript.GetComponent<PurificationManager>().potentialCursedItem = gameObject;
+            textPromptScript.GetComponent<PurificationManager>().cursedObjectScript = gameObject.GetComponentInChildren<CursedObject>();
 
         }
 

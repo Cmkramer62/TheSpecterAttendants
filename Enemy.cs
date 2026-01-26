@@ -30,6 +30,7 @@ public class Enemy : MonoBehaviour {
     private NavMeshAgent agent;
     private Transform player;
     private bool walkPointSet, alreadyAttacked, takeDamage, waitingForScream = false, pausingPatrolState = false;
+    public bool  normalAggro = true;
     private ConeLOSDetector coneDetector;
     private ParticleSystem playersBreath;
     #endregion
@@ -48,11 +49,11 @@ public class Enemy : MonoBehaviour {
     // Update is called once per frame
     private void Update() {
         if(allowedToMove) {
-            bool playerSeen = coneDetector.targetVisible && !player.GetComponent<PlayerMovement>().isHiding;
-            bool playerInAttackRange = Physics.CheckSphere(transform.position, attackRange, playerLayer);
-            // If I can't see you and you're not in melee range OR you're hiding and not within melee range
-            if(!playerSeen && !playerInAttackRange || (player.GetComponent<PlayerMovement>().isHiding && !playerInAttackRange)) {
-                if(chaseMeter == 100f || invisible) {
+            bool playerSeen = coneDetector.targetVisible && !player.GetComponent<PlayerMovement>().isHiding && normalAggro;// && //!player.GetComponent<PlayerMovement>().isHiding;
+            bool playerInAttackRange = Physics.CheckSphere(transform.position, attackRange, playerLayer) && normalAggro;
+            // If I can't see you and you're not in melee range OR you're hiding
+            if(!playerSeen && !playerInAttackRange || !playerSeen && player.GetComponent<PlayerMovement>().isHiding) {
+                if((chaseMeter == 100f || invisible) || !normalAggro) {
                     if(currentMode == Mode.chasing) {
                         AudioController.FadeToAnother(this, musicSource, 4, normalMusicClip, .1f);
                         walkPointSet = false;
@@ -69,7 +70,7 @@ public class Enemy : MonoBehaviour {
             }
 
             // If I'm not invis and I see you and you're NOT in melee range
-            else if(!invisible && playerSeen && !playerInAttackRange) {
+            else if(normalAggro && !invisible && playerSeen && !playerInAttackRange) {
                 if(currentMode != Mode.chasing && !waitingForScream) {
                     if(GetComponent<ConeLOSDetector>().visibilityOverride) chaseMeter = -9999f;
                     else chaseMeter = 80f;
@@ -86,15 +87,16 @@ public class Enemy : MonoBehaviour {
                 if(!waitingForScream) ModeChase();
             }
 
-            // If I'm not invis and I see you and you're within melee range OR if I'm not invis and I can't see you but you ARE in melee range AND hiding
-            else if((!invisible && playerInAttackRange && playerSeen) || (!invisible && !playerSeen && playerInAttackRange && player.GetComponent<PlayerMovement>().isHiding)) {
+            // If I'm not invis and I see you and you're within melee range //OR if I'm not invis and I can't see you but you ARE in melee range AND hiding
+            else if(normalAggro && ((!invisible && playerInAttackRange && playerSeen && !player.GetComponent<PlayerMovement>().isHiding))) {
                 AttackPlayer();
+                StartCoroutine(DeAggroTimer());
             }
 
             // If I can't see you but you hit me
-            else if(!playerSeen && takeDamage) {
-                ModeChase();
-            }
+            //else if(!playerSeen && takeDamage) {
+            //    ModeChase();
+            //}
 
             if(waitingForScream) {
                 Vector3 direction = player.position - transform.position;
@@ -152,6 +154,15 @@ public class Enemy : MonoBehaviour {
 
         }
 
+    }
+
+    private IEnumerator DeAggroTimer() {
+        normalAggro = false;
+        float prevWalkSpeed = walkSpeed;
+        walkSpeed = 5f;
+        yield return new WaitForSeconds(10f);
+        walkSpeed = prevWalkSpeed;
+        normalAggro = true;
     }
 
     private IEnumerator ScreamAnimTimer() {

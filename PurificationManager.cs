@@ -27,37 +27,29 @@ public class PurificationManager : MonoBehaviour {
     }
 
     public void StartPurificationRitual() {
-        ritualTimerMax = ritualTimer;
-        cursedObjectScript = potentialCursedItem.GetComponentInChildren<CursedObject>();
-        var canvas = cursedObjectScript.purificationCanvas;
+        DisplayQuestion();
 
-        canvas.GetComponentInChildren<LookAtConstraint>().constraintActive = true;
-        cursedObjectScript.pSourceA.Play();
-        cursedObjectScript.pSourceB.Play();
-        cursedObjectScript.purificationParticles.Play();
-        cursedObjectScript.purificationSlider.maxValue = ritualTimerMax;
 
-        //StartCoroutine(PurificationTimer(canvas));
+       
+        StartCoroutine(PurificationTimer());
+
+
+
         if(ghostScript.invisible) ghostScript.InvertVisibility();
         ghostVisionScript.visibilityOverride = true;
-        DisplayQuestion();
         endPortalScript.activated = true;
         allowedToDisplayQuestion = true;
     }
 
-    private IEnumerator PurificationTimer(GameObject canvas) {
+    private IEnumerator PurificationTimer() {
+        yield return new WaitForSeconds(1f);
+        cursedObjectScript.pSourceA.Play();
+        yield return new WaitForSeconds(1f);
+        cursedObjectScript.pSourceB.Play();
+        yield return new WaitForSeconds(1f);
+        cursedObjectScript.purificationParticles.Play();
 
-        if(ritualTimer != 0) {
-            ritualTimer--;
-            
-            canvas.transform.GetChild(0).GetComponentInChildren<Slider>().value = ritualTimer;
-            yield return new WaitForSeconds(1f);
-            StartCoroutine(PurificationTimer(canvas));
-        }
-        else {
-            GetComponent<Death>().Jumpscare();
-        }
-        
-
+        yield return new WaitForSeconds(ritualTimer);
+        GetComponent<Death>().Jumpscare();
     }
 }

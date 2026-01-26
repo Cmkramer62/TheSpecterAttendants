@@ -30,6 +30,17 @@ public class CursedObject : MonoBehaviour {
     public Slider purificationSlider;
     public AudioSource pSourceA, pSourceB;
 
+    void Start() {
+        pSourceA.Play();
+        pSourceA.Stop();
+
+        pSourceB.Play();
+        pSourceB.Stop();
+
+        purificationParticles.Play();
+        purificationParticles.Stop(true, ParticleSystemStopBehavior.StopEmittingAndClear);
+    }
+
     void Awake() {
         var LAC = purificationCanvas.GetComponent<LookAtConstraint>();
         LAC.locked = false;
