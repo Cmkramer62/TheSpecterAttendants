@@ -5,7 +5,7 @@ using UnityEngine.SceneManagement;
 
 public class Death : MonoBehaviour {
 
-    public GameObject player, jumpscareObject, scareCamera, cameraParent, realGhost;
+    public GameObject player, jumpscareObject, scareCamera, cameraParent, realGhost, realGhostChild, jumpscareChildObject;
     public AudioSource source;
     public AudioClip jumpscareClip, hitDamageClip;
     public AudioClip[] stingerClips;
@@ -20,14 +20,21 @@ public class Death : MonoBehaviour {
     }
 
     private IEnumerator JumpscareTimer() {
-        //lerp player towards
-        player.SetActive(false);
         realGhost.SetActive(false);
+        realGhostChild.SetActive(false);
+        realGhostChild.transform.parent = jumpscareObject.transform;
+        realGhostChild.transform.position = jumpscareChildObject.transform.position;
+        realGhostChild.transform.rotation = jumpscareChildObject.transform.rotation;
+        realGhostChild.transform.localScale = new Vector3(1.7f, 1.7f, 1.7f);
+        realGhostChild.GetComponent<Animator>().runtimeAnimatorController = jumpscareChildObject.GetComponent<Animator>().runtimeAnimatorController;
+        realGhostChild.SetActive(true);
+        jumpscareChildObject.SetActive(false);
+        player.SetActive(false);
         jumpscareObject.SetActive(true);
+        realGhostChild.transform.GetChild(1).GetComponent<Animator>().Play("JumpscareFaceAnimator");
         source.PlayOneShot(jumpscareClip, scareVolume);
-        //yield return new WaitForSeconds(.166666f);
-        //scareCamera.transform.position = cameraParent.transform.position;
-        yield return new WaitForSeconds(1f);
+        //wait for 1 (?) seconds, then pause the game. Load a menu that's animated without using timescale. What to do about the pause menu functionality?
+        yield return new WaitForSeconds(99f);
         SceneManager.LoadScene(SceneManager.GetActiveScene().buildIndex);
     }
 

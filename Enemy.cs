@@ -7,7 +7,7 @@ public class Enemy : MonoBehaviour {
 
     public LayerMask groundLayer, playerLayer;
     public float health, walkPointMin, walkPointRange, timeBetweenAttacks, attackRange, walkSpeed, runSpeed, chaseMeter = 100f, rotationSpeed = 5f;
-    public int damage, invisibilityOdds = 3, pauseChance = 4;
+    public int damage, invisibilityOdds = 3, pauseChance = 4, deAggroCooldown = 10;
     public ParticleSystem hitEffect;
     public bool invisible = false, freezingAura = false, attractedToSound = false, allowedToMove = true, geistAura = false;
     public SkinnedMeshRenderer[] meshRenderers;
@@ -160,7 +160,7 @@ public class Enemy : MonoBehaviour {
         normalAggro = false;
         float prevWalkSpeed = walkSpeed;
         walkSpeed = 5f;
-        yield return new WaitForSeconds(10f);
+        yield return new WaitForSeconds(deAggroCooldown);
         walkSpeed = prevWalkSpeed;
         normalAggro = true;
     }

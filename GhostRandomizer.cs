@@ -6,6 +6,7 @@ public class GhostRandomizer : MonoBehaviour {
 
     public GameObject[] ghostBodies;
     public int index;
+    public Death deathScript;
 
     #region MeshLists
 
@@ -20,13 +21,12 @@ public class GhostRandomizer : MonoBehaviour {
     #endregion
 
     public bool overrideEyes = false;
-
     public Enemy ghostScript;
     
     public void RandomizeGhost() {
         index = Random.Range(0, ghostBodies.Length);
         ghostBodies[index].SetActive(true);
-
+        deathScript.realGhostChild = ghostBodies[index];
         ghostScript.animator = ghostBodies[index].GetComponent<Animator>();
         SetGhostGeneral();
     }
