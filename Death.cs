@@ -5,7 +5,7 @@ using UnityEngine.SceneManagement;
 
 public class Death : MonoBehaviour {
 
-    public GameObject player, jumpscareObject, scareCamera, cameraParent, realGhost, realGhostChild, jumpscareChildObject;
+    public GameObject player, jumpscareObject, cameraParent, realGhost, jumpscareChildObject, deathUI;
     public AudioSource source;
     public AudioClip jumpscareClip, hitDamageClip;
     public AudioClip[] stingerClips;
@@ -14,6 +14,10 @@ public class Death : MonoBehaviour {
     public int lives = 3;
     public GameObject[] bloodUI, heartsUI;
     public bool allowDeath = true;
+
+    [HideInInspector]
+    public GameObject realGhostChild;
+
 
     public void Jumpscare() {
         StartCoroutine(JumpscareTimer());
@@ -34,8 +38,10 @@ public class Death : MonoBehaviour {
         realGhostChild.transform.GetChild(1).GetComponent<Animator>().Play("JumpscareFaceAnimator");
         source.PlayOneShot(jumpscareClip, scareVolume);
         //wait for 1 (?) seconds, then pause the game. Load a menu that's animated without using timescale. What to do about the pause menu functionality?
-        yield return new WaitForSeconds(99f);
-        SceneManager.LoadScene(SceneManager.GetActiveScene().buildIndex);
+        yield return new WaitForSeconds(1f);
+        Time.timeScale = 0.0f;
+        deathUI.SetActive(true);
+        //SceneManager.LoadScene(SceneManager.GetActiveScene().buildIndex);
     }
 
     public void LoseLife() {
