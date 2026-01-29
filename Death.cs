@@ -38,9 +38,19 @@ public class Death : MonoBehaviour {
         realGhostChild.transform.GetChild(1).GetComponent<Animator>().Play("JumpscareFaceAnimator");
         source.PlayOneShot(jumpscareClip, scareVolume);
         //wait for 1 (?) seconds, then pause the game. Load a menu that's animated without using timescale. What to do about the pause menu functionality?
-        yield return new WaitForSeconds(1f);
-        Time.timeScale = 0.0f;
+        yield return new WaitForSeconds(1.13333f);
+        //Time.timeScale = 0.0f;
+        realGhostChild.GetComponent<Animator>().speed = 0;
         deathUI.SetActive(true);
+        Cursor.lockState = CursorLockMode.None;
+        GetComponent<PauseGame>().normalUI.SetActive(false);
+        GetComponent<PauseGame>().pausedUI.SetActive(false);
+        //can pause false. can move false. disable game timer. disable purification timer. disable purif.cursedObject
+        GetComponent<GameTimer>().KillTimer();
+        GetComponent<PurificationManager>().KillTimer();
+        GetComponent<ToolController>().masterAllowed = false;
+        GetComponent<PauseGame>().allowedToPause = false;
+        AudioController.FadeOutAudio(this, GetComponent<PurificationManager>().cursedObjectScript.pSourceB, .5f);
         //SceneManager.LoadScene(SceneManager.GetActiveScene().buildIndex);
     }
 

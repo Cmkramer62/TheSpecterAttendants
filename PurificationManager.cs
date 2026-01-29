@@ -18,22 +18,19 @@ public class PurificationManager : MonoBehaviour {
     [HideInInspector]
     public CursedObject cursedObjectScript;
 
-    private int ritualTimerMax;
+    private bool allowedToTimer = true;
+    private Coroutine purifyRoutine;
 
     public void DisplayQuestion() {
-        if(!allowedToDisplayQuestion) {
+        if(!allowedToDisplayQuestion && allowedToTimer) {
             GetComponent<PauseGame>().ActivateQuestionPause();
         }
     }
 
     public void StartPurificationRitual() {
         DisplayQuestion();
-
-
-       
-        StartCoroutine(PurificationTimer());
-
-
+  
+        purifyRoutine = StartCoroutine(PurificationTimer());
 
         if(ghostScript.invisible) ghostScript.InvertVisibility();
         ghostVisionScript.visibilityOverride = true;
@@ -50,6 +47,11 @@ public class PurificationManager : MonoBehaviour {
         cursedObjectScript.purificationParticles.Play();
 
         yield return new WaitForSeconds(ritualTimer);
-        GetComponent<Death>().Jumpscare();
+        if(allowedToTimer) GetComponent<Death>().Jumpscare();
+    }
+
+    public void KillTimer() {
+        allowedToTimer = false;
+        StopCoroutine(purifyRoutine);
     }
 }

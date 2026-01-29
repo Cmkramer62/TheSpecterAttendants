@@ -4,7 +4,8 @@ using UnityEngine;
 
 public class ToolController : MonoBehaviour {
 
-    public bool cycleCooldown = false, allowedToCycle = true;
+    public bool cycleCooldown = false, masterAllowed = true;
+    public bool allowedToCycle = true;
     public Animator swapperAnimator;
     public GameObject[] playerItemMeshes, toolbarUI, toolbarMarkerUI;
 
@@ -28,16 +29,16 @@ public class ToolController : MonoBehaviour {
 
     // Update is called once per frame
     void Update() {
-        if(!cycleCooldown && allowedToCycle && Input.GetAxis("Mouse ScrollWheel") > 0f) CycleDown();
-        else if(!cycleCooldown && allowedToCycle && Input.GetAxis("Mouse ScrollWheel") < 0f) CycleUp();
-        else if(!cycleCooldown && allowedToCycle && Input.GetKeyDown(KeyCode.Alpha1)) CycleTo(0);
-        else if(!cycleCooldown && allowedToCycle && Input.GetKeyDown(KeyCode.Alpha2)) CycleTo(1);
-        else if(!cycleCooldown && allowedToCycle && Input.GetKeyDown(KeyCode.Alpha3)) CycleTo(2);
-        else if(!cycleCooldown && allowedToCycle && Input.GetKeyDown(KeyCode.Alpha4)) CycleTo(3);
-        else if(!cycleCooldown && allowedToCycle && Input.GetKeyDown(KeyCode.Alpha5)) CycleTo(4);
-        else if(!cycleCooldown && allowedToCycle && Input.GetKeyDown(KeyCode.Alpha6)) CycleTo(5);
-        else if(!cycleCooldown && allowedToCycle && Input.GetKeyDown(KeyCode.Alpha7)) CycleTo(6);
-        else if(!cycleCooldown && allowedToCycle && Input.GetKeyDown(KeyCode.Alpha8)) CycleTo(7);
+        if(!cycleCooldown && masterAllowed && allowedToCycle && Input.GetAxis("Mouse ScrollWheel") > 0f) CycleDown();
+        else if(!cycleCooldown && masterAllowed && allowedToCycle && Input.GetAxis("Mouse ScrollWheel") < 0f) CycleUp();
+        else if(!cycleCooldown && masterAllowed && allowedToCycle && Input.GetKeyDown(KeyCode.Alpha1)) CycleTo(0);
+        else if(!cycleCooldown && masterAllowed && allowedToCycle && Input.GetKeyDown(KeyCode.Alpha2)) CycleTo(1);
+        else if(!cycleCooldown && masterAllowed && allowedToCycle && Input.GetKeyDown(KeyCode.Alpha3)) CycleTo(2);
+        else if(!cycleCooldown && masterAllowed && allowedToCycle && Input.GetKeyDown(KeyCode.Alpha4)) CycleTo(3);
+        else if(!cycleCooldown && masterAllowed && allowedToCycle && Input.GetKeyDown(KeyCode.Alpha5)) CycleTo(4);
+        else if(!cycleCooldown && masterAllowed && allowedToCycle && Input.GetKeyDown(KeyCode.Alpha6)) CycleTo(5);
+        else if(!cycleCooldown && masterAllowed && allowedToCycle && Input.GetKeyDown(KeyCode.Alpha7)) CycleTo(6);
+        else if(!cycleCooldown && masterAllowed && allowedToCycle && Input.GetKeyDown(KeyCode.Alpha8)) CycleTo(7);
 
         geistLightScript.GeistLightUIUpdate();
         cameraScript.CameraUIUpdate();
