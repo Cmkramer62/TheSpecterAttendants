@@ -11,7 +11,7 @@ public class GroundChecker : MonoBehaviour {
     private string currentTag = "Grass";
 
     public AudioSource footSource;
-    public AudioClip[] normalStepClips, metalStepClips, woodStepClips, ventStepClips, waterStepClips, tileStepClips, carpetStepClips;
+    public AudioClip[] normalStepClips, metalStepClips, woodStepClips, ventStepClips, waterStepClips, tileStepClips, carpetStepClips, rockStepClips;
     private AudioClip[] playingFromClips;
     /*
      * Goal is to check the ground beneath the user.
@@ -43,6 +43,7 @@ public class GroundChecker : MonoBehaviour {
             else if(currentTag.Equals("Water")) playingFromClips = waterStepClips;
             else if(currentTag.Equals("Tile")) playingFromClips = tileStepClips;
             else if(currentTag.Equals("Carpet")) playingFromClips = carpetStepClips;
+            else if(currentTag.Equals("Rock")) playingFromClips = rockStepClips;
         }
     }
 
