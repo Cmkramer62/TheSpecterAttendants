@@ -33,6 +33,7 @@ public class Enemy : MonoBehaviour {
     public bool  normalAggro = true;
     private ConeLOSDetector coneDetector;
     private ParticleSystem playersBreath;
+    private float initSpeed;
     #endregion
 
 
@@ -289,6 +290,7 @@ public class Enemy : MonoBehaviour {
             transform.LookAt(player.position);
             alreadyAttacked = true;
             //animator.SetBool("Attack", true);
+
             Invoke(nameof(ResetAttack), timeBetweenAttacks);
 
             RaycastHit hit;
@@ -312,7 +314,6 @@ public class Enemy : MonoBehaviour {
         alreadyAttacked = false;
         animator.SetBool("Attack", false);
         shadowAnimator.SetBool("Attack", false);
-
     }
 
     public void TakeDamage(float damage) {
