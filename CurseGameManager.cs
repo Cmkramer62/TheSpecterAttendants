@@ -26,8 +26,6 @@ public class CurseGameManager : MonoBehaviour {
     public GhostRandomizer ghostRandomizer;
     //public ParticleSystem auraEnviroParticles;
     
-    //test push
-
     // Start is called before the first frame update
     void Start() {
 
