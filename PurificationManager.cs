@@ -52,6 +52,6 @@ public class PurificationManager : MonoBehaviour {
 
     public void KillTimer() {
         allowedToTimer = false;
-        StopCoroutine(purifyRoutine);
+        if(purifyRoutine != null) StopCoroutine(purifyRoutine);
     }
 }

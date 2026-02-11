@@ -18,6 +18,7 @@ public class EndPortal : MonoBehaviour {
 
     private void OnTriggerEnter(Collider other) {
         if(activated && other.name == "Player") {
+            GetComponent<BoxCollider>().enabled = false;
             AudioController.FadeOutAudio(this, purificationScript.cursedObjectScript.pSourceA, 1f);
             AudioController.FadeOutAudio(this, purificationScript.cursedObjectScript.pSourceB, 1f);
 

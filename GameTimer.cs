@@ -17,6 +17,8 @@ public class GameTimer : MonoBehaviour {
 
     public Material smokeMaterial;
 
+    public bool startTimer = true;
+
     private Vignette vignetteComponent;
     private int totalTimeStored, stageOne, stageTwo, stageThree;
     private bool allowedToTimer = true;
@@ -26,13 +28,15 @@ public class GameTimer : MonoBehaviour {
 
     // Start is called before the first frame update
     void Start() {
-        totalTimeStored = totalTimeLimit;
-        StartCoroutine(Tick());
+        if(startTimer) {
+            totalTimeStored = totalTimeLimit;
+            StartCoroutine(Tick());
 
-        int diff = totalTimeLimit / 4;
-        stageOne = totalTimeLimit - diff;
-        stageTwo = totalTimeLimit - 2 * diff;
-        stageThree = totalTimeLimit - 3 * diff;
+            int diff = totalTimeLimit / 4;
+            stageOne = totalTimeLimit - diff;
+            stageTwo = totalTimeLimit - 2 * diff;
+            stageThree = totalTimeLimit - 3 * diff;
+        }
 
         mainVolume.profile.TryGet(out vignetteComponent);
 
@@ -43,7 +47,7 @@ public class GameTimer : MonoBehaviour {
     }
 
     private void Update() {
-        if(allowedToTimer) {
+        if(startTimer && allowedToTimer) {
             /*
             float diff = secondsOfTimer / 4;
             float t = 1f - ((float)secondsOfTimer / ((float)maxTime - diff));
