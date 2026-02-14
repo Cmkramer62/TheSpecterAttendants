@@ -3,6 +3,12 @@ using System.Collections.Generic;
 using UnityEngine;
 
 [System.Serializable]
+/*
+ * SaveData is the class that stores any data we wish to be in the save file.
+ * It is stored in Application.PersistentDatapath.
+ * 
+ * This class is saved and loaded by SaveSystem.cs.
+ */
 public class SaveData {
 
     public int level;
