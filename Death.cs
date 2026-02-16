@@ -6,7 +6,7 @@ using UnityEngine.Audio;
 
 public class Death : MonoBehaviour {
 
-    public GameObject player, jumpscareObject, cameraParent, realGhost, jumpscareChildObject, deathUI;
+    public GameObject player, jumpscareObject, cameraParent, realGhost, jumpscareChildObject, deathUI, handObjectParent;
     public AudioSource source;
     public AudioClip jumpscareClip, hitDamageClip;
     public AudioClip[] stingerClips;
@@ -32,6 +32,7 @@ public class Death : MonoBehaviour {
 
         realGhost.SetActive(false);
         realGhostChild.SetActive(false);
+        handObjectParent.SetActive(false);
         realGhostChild.transform.parent = jumpscareObject.transform;
         realGhostChild.transform.position = jumpscareChildObject.transform.position;
         realGhostChild.transform.rotation = jumpscareChildObject.transform.rotation;
@@ -43,7 +44,7 @@ public class Death : MonoBehaviour {
         player.SetActive(false);
         jumpscareObject.SetActive(true);
         realGhostChild.transform.GetChild(1).GetComponent<Animator>().Play("JumpscareFaceAnimator");
-        source.PlayOneShot(jumpscareClip, scareVolume);
+        source.PlayOneShot(jumpscareClip);
         Cursor.lockState = CursorLockMode.None;
         GetComponent<PauseGame>().normalUI.SetActive(false);
         GetComponent<PauseGame>().pausedUI.SetActive(false);

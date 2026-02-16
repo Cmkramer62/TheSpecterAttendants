@@ -43,6 +43,7 @@ public class AudioSettings : MonoBehaviour {
 
             masterVolume = saveData.masterVolume;
             masterVolumeSlider.SetValueWithoutNotify(masterVolume);
+            masterVolumeText.text = (((int)masterVolume) + 80).ToString() + "%";
 
             sfxVolume = saveData.sfxVolume;
             musicVolume = saveData.musicVolume;

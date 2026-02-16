@@ -6,7 +6,7 @@ public static class AudioController {
     
     public static void FadeToAnother(MonoBehaviour caller, AudioSource source, float timeToFade, AudioClip newClip, float newVolume) {
         Debug.Log("FadeToAnother -> " + newClip.name);
-        caller.StartCoroutine(FadeToAnotherCoroutine(caller, source, timeToFade, newClip, newVolume));
+        if(newClip != source.clip) caller.StartCoroutine(FadeToAnotherCoroutine(caller, source, timeToFade, newClip, newVolume));
     }
 
     private static IEnumerator FadeToAnotherCoroutine(MonoBehaviour caller, AudioSource source, float timeToFade, AudioClip newClip, float newVolume) {
