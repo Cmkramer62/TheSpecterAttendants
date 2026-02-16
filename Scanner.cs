@@ -68,7 +68,6 @@ public class Scanner : MonoBehaviour {
         if(level != 0) {
             source.pitch = .8f;
             source.pitch += level / 10f;
-            Debug.Log(level / 10f);
             source.PlayOneShot(beep);
         }
     }

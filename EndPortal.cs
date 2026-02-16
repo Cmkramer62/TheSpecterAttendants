@@ -16,6 +16,8 @@ public class EndPortal : MonoBehaviour {
     public Animator portalAnimation;
     public Enemy ghostScript;
 
+    public AudioSettings saveSystem;
+
     private void OnTriggerEnter(Collider other) {
         if(activated && other.name == "Player") {
             GetComponent<BoxCollider>().enabled = false;
@@ -44,6 +46,7 @@ public class EndPortal : MonoBehaviour {
 
 
         if(purificationScript.potentialCursedItem.name == "Goal Curse") {
+            saveSystem.SetLevel(1);
             portalAnimation.Play("WipeAwayAnim");
             source.PlayOneShot(correctClip);
             yield return new WaitForSeconds(.5f);

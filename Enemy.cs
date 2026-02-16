@@ -114,8 +114,8 @@ public class Enemy : MonoBehaviour {
                 );
             }
 
-            animator.SetFloat("Velocity", agent.velocity.magnitude);
-            shadowAnimator.SetFloat("Velocity", agent.velocity.magnitude);
+            if(animator.gameObject.activeInHierarchy) animator.SetFloat("Velocity", agent.velocity.magnitude);
+            if(shadowAnimator.gameObject.activeInHierarchy) shadowAnimator.SetFloat("Velocity", agent.velocity.magnitude);
             #region Angular Rotation
             Vector3 desired = agent.desiredVelocity;
 
@@ -282,6 +282,17 @@ public class Enemy : MonoBehaviour {
         }
     }
 
+    // Called by jumpscare to instantly make visible.
+    public void MakeVisible() {
+        if(invisible) {
+            foreach(SkinnedMeshRenderer meshRen in meshRenderers) {
+                meshRen.enabled = true;
+            }
+            foreach(GameObject horn in horns) {
+                horn.SetActive(true);
+            }
+        }
+    }
 
     private void AttackPlayer() {
         agent.SetDestination(transform.position);

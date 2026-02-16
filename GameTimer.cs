@@ -54,10 +54,10 @@ public class GameTimer : MonoBehaviour {
             Debug.Log(t + " " + vignetteComponent.intensity.value);
             if(secondsOfTimer <= stageOne) vignetteComponent.intensity.value = Mathf.Lerp(0.203f, 1f, t);
             */
-            if(totalTimeLimit <= stageOne) {
+            if(totalTimeLimit <= stageTwo) {
                 vignetteComponent.intensity.value = Mathf.Lerp(vignetteComponent.intensity.value, 1f, Time.deltaTime / totalTimeLimit);
                 Color c = smokeMaterial.color;
-                c.a = Mathf.Lerp(c.a, 1f, Time.deltaTime / totalTimeLimit * .25f);
+                c.a = Mathf.Lerp(c.a, .8f, Time.deltaTime / totalTimeLimit * .25f);
                 smokeMaterial.color = c;
             }
         } 

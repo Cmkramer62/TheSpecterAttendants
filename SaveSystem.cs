@@ -1,43 +1,34 @@
-using UnityEngine;
 using System.IO;
-using System.Runtime.Serialization.Formatters.Binary;
+using UnityEngine;
+using System;
 
-/*
- * This class writes and loads data from a file located in Application.persistentDataPath.
- * It creates a new instance of SaveData.cs and sets specific values through that method.
- * -Note: all values must be passed at the same time.
- */
 public static class SaveSystem {
-    
-    public static void Save(int level, float masterVolume, float sfxVolume, float musicVolume, float ambientVolume,
-        float uiVolume) {
-        BinaryFormatter formatter = new BinaryFormatter();
-        string path = Application.persistentDataPath + "/hideData";
+    private static string path => Application.persistentDataPath + "/hideData.json";
 
-        FileStream stream = new FileStream(path, FileMode.Create);
+    // SAVE
+    public static void Save(int level, float masterVolume, float sfxVolume, float musicVolume, float ambientVolume) {
+        SaveData data = new SaveData(level, masterVolume, sfxVolume, musicVolume, ambientVolume);
 
-        SaveData data = new SaveData(level, masterVolume, sfxVolume, musicVolume, ambientVolume,
-            uiVolume);
+        string json = JsonUtility.ToJson(data, true); // true = pretty print (optional)
+        File.WriteAllText(path, json);
 
-        formatter.Serialize(stream, data);
-        stream.Close();
+        Debug.Log("Game Saved to: " + path);
+        Debug.Log(json);
     }
 
+    // LOAD
     public static SaveData Load() {
-        string path = Application.persistentDataPath + "/hideData";
-        if(File.Exists(path)) {
-            BinaryFormatter formatter = new BinaryFormatter();
-            FileStream stream = new FileStream(path, FileMode.Open);
-
-            SaveData data = formatter.Deserialize(stream) as SaveData;
-            stream.Close();
-
-            return data;
-        }
-        else {
-            Debug.LogError("Save file not found in " + path);
+        if(!File.Exists(path)) {
+            Debug.LogWarning("No save file found at: " + path);
             return null;
         }
-    }
 
+        string json = File.ReadAllText(path);
+        SaveData data = JsonUtility.FromJson<SaveData>(json);
+
+        Debug.Log("Game Loaded from: " + path);
+        Debug.Log(json);
+
+        return data;
+    }
 }
