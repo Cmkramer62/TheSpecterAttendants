@@ -32,31 +32,22 @@ public class CurseGameManager : MonoBehaviour {
         foreach(GameObject obj in GameObject.FindGameObjectsWithTag("CurseSpawn")) {
             spawnPoints.Add(obj);
         }
-        
-
         goalCurseIndex = Random.Range(0, spawnPoints.Count);
-        // IDEA. have a script on each shelf. Rather than spawning fakeitems on each other slot, have the 
-        // shelves already have some, in diff prefabs. When spawning a curse, we'll remove the thing in the slot.
-        // maybe don't need a sep script for that. do transform.find();
+
+        // goal curse section. goalCurseIndex used to be 'i'
+        goalCurse = GameObject.Instantiate(cursedObjectPrefabs[Random.Range(0, cursedObjectPrefabs.Length)], spawnPoints[goalCurseIndex].transform);
+        goalCurse.GetComponentInChildren<CursedObject>().toolControllerScript = GetComponent<ToolController>();
+        goalCurse.GetComponentInChildren<CursedObject>().SetRandomGoal(); // set the curses to be random 3.
+        goalCurse.name = "Goal Curse";
+        goalCurseImage.sprite = curseTypeSprites[goalCurse.GetComponentInChildren<CursedObject>().index[0]]; // First curse reveal.
+        goalCurseText.text = curseTypeSprites[goalCurse.GetComponentInChildren<CursedObject>().index[0]].name;
+
+        ApplyCursedAura(); // Second curse reveal.
+        ApplyCursedEnvironment(); // Third curse reveal.
+
+        RemovePropItem(goalCurseIndex);
         for (int i = 0; i < spawnPoints.Count; i++) {
-            if(i == goalCurseIndex) {
-                goalCurse = GameObject.Instantiate(cursedObjectPrefabs[Random.Range(0, cursedObjectPrefabs.Length)], spawnPoints[i].transform);
-                goalCurse.GetComponentInChildren<CursedObject>().toolControllerScript = GetComponent<ToolController>();
-                goalCurse.GetComponentInChildren<CursedObject>().SetRandomGoal(); // set the curses to be random 3.
-
-                goalCurse.name = "Goal Curse";
-
-                goalCurseImage.sprite = curseTypeSprites[goalCurse.GetComponentInChildren<CursedObject>().index[0]]; // First curse reveal.
-                goalCurseText.text = curseTypeSprites[goalCurse.GetComponentInChildren<CursedObject>().index[0]].name;
-                ApplyCursedAura(); // Second curse reveal.
-                ApplyCursedEnvironment(); // Third curse reveal.
-
-
-                RemovePropItem(i);
-
-            }
-            else {
-
+            if(i != goalCurseIndex) {
                 if(curseSpawnBuffer >= curseSpawnBufferMax) {
                     if(Random.Range(0, oddsSpawnRate) == 0) {
                         GameObject newCurse = GameObject.Instantiate(cursedObjectPrefabs[Random.Range(0, cursedObjectPrefabs.Length)], spawnPoints[i].transform);
@@ -66,12 +57,9 @@ public class CurseGameManager : MonoBehaviour {
                         curseSpawnBuffer = 0;
                         RemovePropItem(i);
                     }
-                    
                 }
                 else curseSpawnBuffer++;
-                
             }
-            
         }
     }
 

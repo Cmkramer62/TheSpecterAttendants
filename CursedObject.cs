@@ -30,6 +30,8 @@ public class CursedObject : MonoBehaviour {
     public Slider purificationSlider;
     public AudioSource pSourceA, pSourceB;
 
+    public int goalCurseThirdAspectIndex = -1;
+
     void Start() {
         pSourceA.Play();
         pSourceA.Stop();
@@ -59,6 +61,7 @@ public class CursedObject : MonoBehaviour {
         else {
             CursedTypes curseToAdd;
             int rand = Random.Range(0, 6);
+            if(cursesList.Count == 2) goalCurseThirdAspectIndex = rand; // We keep track of the last aspect's index for the goal curse.
             if(rand == 0) curseToAdd = CursedTypes.Glowing;
             else if(rand == 1) curseToAdd = CursedTypes.EMF;
             else if(rand == 2) curseToAdd = CursedTypes.Aura;
@@ -80,10 +83,21 @@ public class CursedObject : MonoBehaviour {
     }
 
     public void SetRandomCurses() {
-        if(cursesList.Count == 2) return;
+        if(cursesList.Count == 3) return;
         else {
+            int antiInt = GameObject.Find("Game Manager").GetComponent<CurseGameManager>().goalCurse.GetComponentInChildren<CursedObject>().goalCurseThirdAspectIndex;
+
             CursedTypes curseToAdd;
             int rand = Random.Range(0, 6);
+            Debug.Log("anti int " + antiInt);
+            if(rand == antiInt) {
+                if(antiInt == 0 && rand == 0) rand += Random.Range(1, 4);
+                else if(antiInt == 5 && rand == 5) rand -= Random.Range(1, 4);
+                else rand += 1;
+            }
+            // if curse count is 2 (we only want to check the last and third curse. As in it's ok if 2/3 of the curses match up, but not the last one.
+            // and rand = index of curse
+            // also, because we are not remembering previous rands, we can have repeats. (only showing 2 or 1 curse).
             if(rand == 0) curseToAdd = CursedTypes.Glowing;
             else if(rand == 1) curseToAdd = CursedTypes.EMF;
             else if(rand == 2) curseToAdd = CursedTypes.Aura;
