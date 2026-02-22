@@ -14,8 +14,10 @@ public class Tutorial : MonoBehaviour {
     public AudioClip textSound;
     public PlayerMovement playerScript;
 
-    public bool usedHidingSpot = false;
 
+    public bool usedHidingSpot = false, walkedAround = false, checkedInventory = false;
+
+    public float walkedAroundAmount = 0f;
     private TextPrompter textPromptScript;
     private Coroutine routine;
     private bool done = false;
@@ -50,14 +52,24 @@ public class Tutorial : MonoBehaviour {
     // Update is called once per frame
     void Update() {
 
-        // The text box should already be there.
-        if(currentState == TutorialState.Wasd && (Input.GetKeyDown(KeyCode.W) || Input.GetKeyDown(KeyCode.A) || Input.GetKeyDown(KeyCode.S) || Input.GetKeyDown(KeyCode.D))) {
+        if(!walkedAround && (Input.GetAxis("Horizontal") + Input.GetAxis("Vertical") != 0)) {
+            walkedAroundAmount += 1 * Time.deltaTime;
+            if(walkedAroundAmount >= 5) {
+                walkedAround = true;
+            }
+        }
+        if(currentState == TutorialState.TabClues && Input.GetKeyDown(KeyCode.Tab)) {
+            checkedInventory = true;
+        }
+
+            // The text box should already be there.
+        if(currentState == TutorialState.Wasd && walkedAround) {
             // Done with movement.
             Increment();
             currentState = TutorialState.Shift;
             StartNextTutorial();
         }
-        else if(currentState == TutorialState.Shift && playerScript.GetRemainingStam() < 0.8f) {//(currentState == TutorialState.Shift && (Input.GetKeyDown(KeyCode.W) || Input.GetKeyDown(KeyCode.A) || Input.GetKeyDown(KeyCode.S) || Input.GetKeyDown(KeyCode.D)) && Input.GetKeyDown(KeyCode.LeftShift)) {
+        else if(currentState == TutorialState.Shift && playerScript.GetRemainingStam() < 0.9f) {//(currentState == TutorialState.Shift && (Input.GetKeyDown(KeyCode.W) || Input.GetKeyDown(KeyCode.A) || Input.GetKeyDown(KeyCode.S) || Input.GetKeyDown(KeyCode.D)) && Input.GetKeyDown(KeyCode.LeftShift)) {
             // Done with sprinting.
             Increment();
             currentState = TutorialState.Crouch;
@@ -70,9 +82,21 @@ public class Tutorial : MonoBehaviour {
         }
         else if(currentState == TutorialState.Jump && Input.GetKeyDown(KeyCode.Space)) {
             IncrementDoor();
+            StartNextTutorial();
+            index++; // We are doing one more because of the door hint.
+            currentState = TutorialState.Hiding;
         }
         else if(currentState == TutorialState.Hiding && usedHidingSpot) {
             IncrementDoor();
+            currentState = TutorialState.TabClues;
+        }
+        else if(currentState == TutorialState.TabClues && checkedInventory == true && Input.GetKeyDown(KeyCode.Tab)) {
+            IncrementDoor();
+            currentState = TutorialState.TabAspects;
+        }
+        else if(currentState == TutorialState.TabAspects && checkedInventory == true && Input.GetKeyDown(KeyCode.Tab)) {
+            IncrementDoor();
+            currentState = TutorialState.Waiting;
         }
     }
 
