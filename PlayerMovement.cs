@@ -81,6 +81,10 @@ public class PlayerMovement : MonoBehaviour {
         return isTired;
     }
 
+    public float GetRemainingStam() {
+        return sprintRemaining / sprintDuration;
+    }
+
     void Update() {
 
         // MOVEMENT Section

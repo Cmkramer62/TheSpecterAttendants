@@ -18,6 +18,8 @@ public class HidingSpot : MonoBehaviour {
     public Vector3 rotationAltered;
     public int materialIndex = 0;
 
+    public bool tutorialHidingSpot = false;
+
     private GameObject player;
     private Vector3 initialPosVec;
     private Quaternion initRot;
@@ -79,12 +81,13 @@ public class HidingSpot : MonoBehaviour {
         player.GetComponent<PlayerMovement>().isHiding = false;
         player.transform.parent.GetComponentInChildren<ToolController>().ForceToPrevhand(storedItem);
 
+        if(tutorialHidingSpot) GameObject.Find("TutorialManager").GetComponent<Tutorial>().usedHidingSpot = true;
+
         if(scareOnExit) {
             gameObject.layer = 0;
             yield return new WaitForSeconds(.5f);
             GameObject.Find("Game Manager").GetComponent<Death>().Jumpscare();
         }
-        else GameObject.Find("Game Manager").GetComponent<HideAndSeekManager>().ResetHidingSpots();
     }
     #endregion
 

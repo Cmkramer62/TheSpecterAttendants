@@ -28,9 +28,7 @@ public class Door : MonoBehaviour {
             OpenCloseDoor();
         }
         else if (unlockable && locked && gameManager.GetComponent<Inventory>().inventoryDictionary.ContainsKey(keyname)){
-            locked = false;
-            source.Stop();
-            source.PlayOneShot(unlockClip);
+            UnlockDoor();
         }
         else {
             source.Stop();
@@ -38,6 +36,12 @@ public class Door : MonoBehaviour {
             source.PlayOneShot(lockedClip);
             GetComponent<InteractPrompt>().InteractWithObject();
         }
+    }
+
+    public void UnlockDoor() {
+        locked = false;
+        source.Stop();
+        source.PlayOneShot(unlockClip);
     }
 
     /*
