@@ -31,6 +31,7 @@ public class CursedObject : MonoBehaviour {
     public AudioSource pSourceA, pSourceB;
 
     public int goalCurseThirdAspectIndex = -1;
+    public bool tutorialCurse = false;
 
     void Start() {
         pSourceA.Play();
@@ -191,6 +192,8 @@ public class CursedObject : MonoBehaviour {
             source.pitch = Random.Range(.8f, 1.2f);
             source.PlayOneShot(cursedAudioClips[Random.Range(0, cursedAudioClips.Length)]);
         }
+
+        if(tutorialCurse) GameObject.Find("TutorialManager").GetComponent<Tutorial>().toolDone = true;
     }
 
     private IEnumerator LerpLight(bool state) {

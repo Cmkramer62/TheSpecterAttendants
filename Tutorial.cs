@@ -4,7 +4,7 @@ using UnityEngine;
 
 public class Tutorial : MonoBehaviour {
 
-    public enum TutorialState { Waiting, Wasd, Shift, Crouch, Jump, Hiding, TabClues, TabAspects}
+    public enum TutorialState { Waiting, Wasd, Shift, Crouch, Jump, Hiding, TabClues, TabAspects, Tools, Done}
     public TutorialState currentState = TutorialState.Waiting;
 
     public string[] tutorialLists;
@@ -13,9 +13,9 @@ public class Tutorial : MonoBehaviour {
 
     public AudioClip textSound;
     public PlayerMovement playerScript;
+    public ToolController toolScript;
 
-
-    public bool usedHidingSpot = false, walkedAround = false, checkedInventory = false;
+    public bool usedHidingSpot = false, walkedAround = false, checkedInventory = false, finishedClues = false, toolDone = false;
 
     public float walkedAroundAmount = 0f;
     private TextPrompter textPromptScript;
@@ -45,6 +45,10 @@ public class Tutorial : MonoBehaviour {
         if(currentState == TutorialState.Waiting) {
             playerScript.allowedToMove = true;
             currentState = TutorialState.Wasd;
+        }
+        else if(currentState == TutorialState.TabAspects) {
+            finishedClues = true;
+            toolScript.masterAllowed = true;
         }
         DisplayIt(tutorialLists[index]);
     }
@@ -94,9 +98,13 @@ public class Tutorial : MonoBehaviour {
             IncrementDoor();
             currentState = TutorialState.TabAspects;
         }
-        else if(currentState == TutorialState.TabAspects && checkedInventory == true && Input.GetKeyDown(KeyCode.Tab)) {
+        else if(currentState == TutorialState.TabAspects && checkedInventory == true && Input.GetKeyDown(KeyCode.Tab) && finishedClues) {
             IncrementDoor();
-            currentState = TutorialState.Waiting;
+            currentState = TutorialState.Tools;
+        }
+        else if(currentState == TutorialState.Tools && toolDone) {
+            IncrementDoor();
+            currentState = TutorialState.Done;
         }
     }
 
@@ -104,12 +112,16 @@ public class Tutorial : MonoBehaviour {
     private void DisplayIt(string displayText) {
         if(textPromptScript == null) textPromptScript = GameObject.Find("Game Manager").GetComponent<TextPrompter>();
 
-        if(displayText.Contains("_")) textPromptScript.QueueTextPrompt(displayText.Split('_'), textSound);
-        else textPromptScript.QueueTextPrompt(displayText, textSound);
-
-        displayText = displayText.Replace('_', ' ');
-
-        tutorialDoors[doorIndex].GetComponent<InteractPrompt>().displayText = displayText;
+        if(displayText.Contains("_")) {
+            textPromptScript.QueueTextPrompt(displayText.Split('_'), textSound);
+            var disList = displayText.Split('_');
+            tutorialDoors[doorIndex].GetComponent<InteractPrompt>().displayText = disList[disList.Length-1];
+        }
+        else {
+            textPromptScript.QueueTextPrompt(displayText, textSound);
+            tutorialDoors[doorIndex].GetComponent<InteractPrompt>().displayText = displayText;
+        }
+        
     }
 
 }

@@ -21,7 +21,7 @@ public class Portal : MonoBehaviour {
 
 
     private Animator fadeAnimator;
-    private GameObject gameManager, playerReference;
+    public GameObject gameManager, playerReference;
     private bool inside = false;
     private AudioSource sourceTwoDim;
 
@@ -78,7 +78,7 @@ public class Portal : MonoBehaviour {
         player.GetComponent<PlayerMovement>().allowedToCrouch = false;
         gameManager.GetComponent<PauseGame>().allowedToPause = false;
         player.GetComponent<CharacterController>().enabled = false;
-        otherPortal.used = true;
+        if(otherPortal != null && portalType == PortalTypes.Teleport) otherPortal.used = true;
 
         fadeAnimator.Play("FadeToWarp");
         yield return new WaitForSeconds(animspeedA);
