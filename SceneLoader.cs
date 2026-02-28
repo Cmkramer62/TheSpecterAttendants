@@ -20,6 +20,10 @@ public class SceneLoader : MonoBehaviour {
     public AudioSettings saveSystem;
     public AudioMixer masterMixer;
 
+    private void Start() {
+        masterMixer.SetFloat("MainVolumeParam", 0);
+    }
+
     public void SetClip(AudioClip newClip) {
         clip = newClip;
     }
@@ -80,7 +84,6 @@ public class SceneLoader : MonoBehaviour {
         //yield return new WaitForSeconds(0.3f);
 
        // operation.allowSceneActivation = true;
-        masterMixer.SetFloat("MainVolumeParam", 0);
     }
 
     public void FadeOutAllSources() {

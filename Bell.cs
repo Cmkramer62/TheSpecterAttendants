@@ -29,7 +29,7 @@ public class Bell : MonoBehaviour {
             source.PlayOneShot(ringClip);
             StartCoroutine(BellCooldownTimer());
             TriggerCurse(true); // state here is not used.
-            if(ghostSearchWithSound) ghostScript.walkPoint = gameObject.transform.parent.parent.parent.transform.GetChild(1).transform.position;
+            if(ghostSearchWithSound && !ghostScript.invisible) ghostScript.walkPoint = gameObject.transform.parent.parent.parent.transform.GetChild(1).transform.position;
         }
     }
 

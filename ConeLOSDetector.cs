@@ -7,13 +7,10 @@ public class ConeLOSDetector : MonoBehaviour {
     public float fieldOfViewAngle = 90f; // The field of view angle of the monster
     public int viewDistance = 20; // How far away the player can be without being seen.
 
-    public bool targetVisible = false, isMonster, visibilityOverride = false; // Flag to indicate if the player is in sight
-
+    public bool targetVisible = false, visibilityOverride = false; // Flag to indicate if the player is in sight
     public LayerMask ignoreMeLayer;
 
-    private bool wasHunting = false;
-
-    public bool inViewDist = false, playerFieldView = false, playerLOS = false;
+    public bool inViewDist = false, inFieldOfView = false, inLineOfSight = false;
 
     private void OnEnable() {
         thisGameObject = gameObject.transform;
@@ -25,13 +22,13 @@ public class ConeLOSDetector : MonoBehaviour {
      */
     private void Update() {
         inViewDist = IsPlayerInViewDistance();
-        playerFieldView = IsPlayerInFieldOfView();
-        playerLOS = IsPlayerInLineOfSight(thisGameObject);
+        inFieldOfView = IsPlayerInFieldOfView();
+        inLineOfSight = IsPlayerInLineOfSight(thisGameObject);
 
-        if(visibilityOverride || (inViewDist && playerFieldView && playerLOS)){//&& ((isMonster && target.gameObject.GetComponent<Flashlight>().flashlightState) || !isMonster)) {
+        if(visibilityOverride || (inViewDist && inFieldOfView && inLineOfSight)){
             targetVisible = true;
         }
-        else { //if(!inViewDist || !playerFieldView || !playerLOS){ // || (isMonster && !target.gameObject.GetComponent<Flashlight>().flashlightState)) {
+        else {
             targetVisible = false;
         }
     }
@@ -65,6 +62,7 @@ public class ConeLOSDetector : MonoBehaviour {
             if(hit.transform.name.Equals(target.name)) {
                 return true;
             }
+            if(target.name == "Ghost Enemy") Debug.Log(hit.transform.name);
         }
         return false;
     }

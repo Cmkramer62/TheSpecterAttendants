@@ -30,6 +30,7 @@ public class Death : MonoBehaviour {
     private IEnumerator JumpscareTimer() {
         masterMixer.SetFloat("MainVolumeParam", -80);
 
+        #region Ghost Teleportation
         realGhost.SetActive(false);
         realGhostChild.SetActive(false);
         handObjectParent.SetActive(false);
@@ -40,11 +41,15 @@ public class Death : MonoBehaviour {
         realGhostChild.GetComponent<Animator>().runtimeAnimatorController = jumpscareChildObject.GetComponent<Animator>().runtimeAnimatorController;
         realGhost.GetComponent<Enemy>().MakeVisible();
         realGhostChild.SetActive(true);
+        #endregion
+
         jumpscareChildObject.SetActive(false);
         player.SetActive(false);
         jumpscareObject.SetActive(true);
         realGhostChild.transform.GetChild(1).GetComponent<Animator>().Play("JumpscareFaceAnimator");
-        source.PlayOneShot(jumpscareClip);
+
+        source.PlayOneShot(jumpscareClip, .4f);
+        Debug.Log("J soiund");
         Cursor.lockState = CursorLockMode.None;
         GetComponent<PauseGame>().normalUI.SetActive(false);
         GetComponent<PauseGame>().pausedUI.SetActive(false);
@@ -56,7 +61,7 @@ public class Death : MonoBehaviour {
         yield return new WaitForSeconds(1.13333f);
         realGhostChild.GetComponent<Animator>().speed = 0;
         
-        AudioController.FadeOutAudio(this, GetComponent<PurificationManager>().cursedObjectScript.pSourceB, .5f);
+        if(GetComponent<PurificationManager>().cursedObjectScript != null) AudioController.FadeOutAudio(this, GetComponent<PurificationManager>().cursedObjectScript.pSourceB, .5f);
         yield return new WaitForSeconds(1f);
         deathUI.SetActive(true);
 
@@ -69,6 +74,11 @@ public class Death : MonoBehaviour {
 
     private IEnumerator BloodTimer() {
         source.PlayOneShot(hitDamageClip);
+        if(player.GetComponent<PlayerMovement>().isHiding) {
+            foreach(HidingSpot spot in GameObject.FindObjectsByType<HidingSpot>(FindObjectsSortMode.None)) {
+                if(spot.hidingHere) spot.Unhide();
+            }
+        }
 
         if(lives - 1 == 0) {
             // player is dead.

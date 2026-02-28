@@ -34,6 +34,8 @@ public class Enemy : MonoBehaviour {
     private ConeLOSDetector coneDetector;
     private ParticleSystem playersBreath;
     private float initSpeed;
+
+    private ConeLOSDetector playerVision;
     #endregion
 
 
@@ -44,6 +46,7 @@ public class Enemy : MonoBehaviour {
         agent = GetComponent<NavMeshAgent>();
         coneDetector = GetComponent<ConeLOSDetector>();
         agent.updateRotation = false;
+        playerVision = player.GetChild(1).GetChild(0).GetComponent<ConeLOSDetector>();
     }
 
 
@@ -53,7 +56,7 @@ public class Enemy : MonoBehaviour {
             bool playerSeen = coneDetector.targetVisible && !player.GetComponent<PlayerMovement>().isHiding && normalAggro;// && //!player.GetComponent<PlayerMovement>().isHiding;
             bool playerInAttackRange = Physics.CheckSphere(transform.position, attackRange, playerLayer) && normalAggro;
             // If I can't see you and you're not in melee range OR you're hiding
-            if(!playerSeen && !playerInAttackRange || !playerSeen && player.GetComponent<PlayerMovement>().isHiding) {
+            if(!playerSeen && !playerInAttackRange) {
                 if((chaseMeter == 100f || invisible) || !normalAggro) {
                     if(currentMode == Mode.chasing) {
                         AudioController.FadeToAnother(this, musicSource, 4, normalMusicClip, .1f);
@@ -75,8 +78,18 @@ public class Enemy : MonoBehaviour {
                 if(currentMode != Mode.chasing && !waitingForScream) {
                     if(GetComponent<ConeLOSDetector>().visibilityOverride) chaseMeter = -9999f;
                     else chaseMeter = 80f;
-                    StartCoroutine(ScreamAnimTimer());
-                    AudioController.FadeToAnother(this, musicSource, .3f, chaseMusicClip, .1f);//FadeInAudio(this, chaseClip, 3, .1f);
+
+                    // if its not the ritual and I see your back, do silent. else:
+                    if(!GetComponent<ConeLOSDetector>().visibilityOverride && !playerVision.targetVisible ) {
+                        ModeChase();
+                        // We still want to Fade to chase music if player now turns and sees. Or maybe not necessary.
+                    }
+                    else {
+                        StartCoroutine(ScreamAnimTimer());
+                        AudioController.FadeToAnother(this, musicSource, .3f, chaseMusicClip, .1f);//FadeInAudio(this, chaseClip, 3, .1f);
+                    }
+                    
+
                     playerLastSeen = player.position;
                 }
                 else if(currentMode == Mode.chasing) {
@@ -89,7 +102,7 @@ public class Enemy : MonoBehaviour {
             }
 
             // If I'm not invis and I see you and you're within melee range //OR if I'm not invis and I can't see you but you ARE in melee range AND hiding
-            else if(normalAggro && ((!invisible && playerInAttackRange && playerSeen && !player.GetComponent<PlayerMovement>().isHiding))) {
+            else if(normalAggro && ((!invisible && playerInAttackRange && chaseMeter != 100f))) {
                 AttackPlayer();
                 StartCoroutine(DeAggroTimer());
             }
@@ -169,7 +182,6 @@ public class Enemy : MonoBehaviour {
     private IEnumerator ScreamAnimTimer() {
         monsterSource.pitch = Random.Range(.9f, 1.1f);
         monsterSource.PlayOneShot(screamClip);
-
         waitingForScream = true;
         animator.Play("Scream");
         shadowAnimator.Play("Scream");
@@ -194,14 +206,14 @@ public class Enemy : MonoBehaviour {
         if(!walkPointSet) {
             Vector3 point = RandomNavSphere(transform.position, walkPointRange, groundLayer);
             
-            // means we found something valid
+            // Means we found something valid.
             if(point != transform.position) {
                 walkPoint = point;
                 walkPointSet = true;
                 if(!invisible && Random.Range(0, pauseChance) == 0) StartCoroutine(PausingPatrol());
-                // Go invis
-                else if((Random.Range(0, invisibilityOdds) != 0 && !invisible) || 
-                    (Random.Range(0, invisibilityOdds) == 0 && invisible && Vector3.Distance(player.position, transform.position) > walkPointRange * 0.15f) ){
+                // Go invis, but only if not close to player and it's not the ritual.
+                else if(!GetComponent<ConeLOSDetector>().visibilityOverride && ((Random.Range(0, invisibilityOdds) != 0 && !invisible) || 
+                    (Random.Range(0, invisibilityOdds) == 0 && invisible && Vector3.Distance(player.position, transform.position) > walkPointRange * 0.15f)) ) {
                     InvertVisibility();
                 }
 

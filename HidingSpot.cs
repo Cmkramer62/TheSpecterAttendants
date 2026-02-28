@@ -47,6 +47,8 @@ public class HidingSpot : MonoBehaviour {
         storedItem = player.transform.parent.GetComponentInChildren<ToolController>().heldIndex;
         player.transform.parent.GetComponentInChildren<ToolController>().ForceToBarehand();
         StartCoroutine(HideTimer());
+
+        if(GetComponent<Animator>()) GetComponent<Animator>().Play("LockerOpen");
     }
 
     private IEnumerator HideTimer() {
@@ -58,11 +60,13 @@ public class HidingSpot : MonoBehaviour {
         initRot = player.transform.rotation;
         player.transform.position = positionHide.position;
         player.transform.rotation = positionHide.rotation;
+        if(GetComponent<Animator>()) GetComponent<Animator>().Play("LockerClose");
     }
 
-    private void Unhide() {
+    public void Unhide() {
         GetComponent<AudioSource>().PlayOneShot(exitClip);
         fadeAnimator.Play("Fade to Black");
+        if(GetComponent<Animator>()) GetComponent<Animator>().Play("LockerOpen");
 
         StartCoroutine(UnhideTimer());
     }
@@ -82,12 +86,14 @@ public class HidingSpot : MonoBehaviour {
         player.transform.parent.GetComponentInChildren<ToolController>().ForceToPrevhand(storedItem);
 
         if(tutorialHidingSpot) GameObject.Find("TutorialManager").GetComponent<Tutorial>().usedHidingSpot = true;
+        if(GetComponent<Animator>()) GetComponent<Animator>().Play("LockerClose");
 
         if(scareOnExit) {
             gameObject.layer = 0;
             yield return new WaitForSeconds(.5f);
             GameObject.Find("Game Manager").GetComponent<Death>().Jumpscare();
         }
+
     }
     #endregion
 
