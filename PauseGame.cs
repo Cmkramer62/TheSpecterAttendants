@@ -10,45 +10,61 @@ public class PauseGame : MonoBehaviour {
     public PlayerMovement playerMovement;
 
     public AudioSource source;
-    public AudioClip clip;
+    public AudioClip openClip, closeClip;
 
-    public GameObject[] pausedUIObjects;
+    public GameObject[] pauseMainChildren, pauseMainButtons;
 
-    public bool allowedToPause = true, allowedToQuestionPause = true;
+    public float inactivePauseButtonDarkenIntensity = .3f;
+    public bool allowedToPause = true, allowedToQuestionPause = true, pauseCooldown = false;
+    public Animator pauseUIAnimator;
 
     // Update is called once per frame
     void Update() {
         if(allowedToPause && (Input.GetKeyDown(KeyCode.Tab))) {
             //mapUI.SetActive(false);
-            if(!paused) {
-                source.PlayOneShot(clip);
-                normalUI.SetActive(false);
-                pausedUI.SetActive(true);
-                Cursor.lockState = CursorLockMode.None;
-                paused = true;
-
-                mouseLook.allowedToLook = false;
-                playerMovement.allowedToMove = false;
-               // question.SetActive(false);
-                //title.SetActive(true);
-            }
-            else {
-                AudioManager.PlayDeny();
-                normalUI.SetActive(true);
-                pausedUI.SetActive(false);
-                Cursor.lockState = CursorLockMode.Locked;
-                paused = false;
-
-                mouseLook.allowedToLook = true;
-                playerMovement.allowedToMove = true;
-                ExitPausedUI();
-            }
+            PauseGameHandler();
         }
+    }
+
+    private void PauseGameHandler() {
+        if(!pauseCooldown && !paused) {
+            source.PlayOneShot(openClip);
+            normalUI.SetActive(false);
+            pausedUI.SetActive(true);
+            Cursor.lockState = CursorLockMode.None;
+            paused = true;
+
+            mouseLook.allowedToLook = false;
+            playerMovement.allowedToMove = false;
+            pauseUIAnimator.SetBool("Paused", true);
+        }
+        else if(!pauseCooldown){
+            StartCoroutine(PauseCooldownTimer());
+        }
+    }
+
+    private IEnumerator PauseCooldownTimer() {
+        pauseCooldown = true;
+        pauseUIAnimator.SetBool("Paused", false);
+        normalUI.SetActive(true);
+        source.PlayOneShot(closeClip);
+
+        yield return new WaitForSeconds(0.375f);
+        //AudioManager.PlayDeny(); // should make more entries for this, such as the open and close used here?
+
+        pausedUI.SetActive(false);
+        Cursor.lockState = CursorLockMode.Locked;
+        paused = false;
+
+        mouseLook.allowedToLook = true;
+        playerMovement.allowedToMove = true;
+        ExitPausedUI();
+        pauseCooldown = false;
     }
 
     public void ActivateQuestionPause() {
         if(allowedToQuestionPause) {
-            source.PlayOneShot(clip);
+            source.PlayOneShot(openClip);
             if(!questionPaused) {
                 //normalUI.SetActive(false);
                 questionUI.SetActive(true);
@@ -72,15 +88,19 @@ public class PauseGame : MonoBehaviour {
         }
     }
 
-    public void PausedUIActive(int index) {
-        for(int i = 0; i < pausedUIObjects.Length; i++) {
-            pausedUIObjects[i].SetActive(i == index);
+    public void PauseTitleButtonPressed(int index) {
+        for(int i = 0; i < pauseMainChildren.Length; i++) {
+            pauseMainChildren[i].SetActive(i == index);
+        }
+        for(int i = 0; i < pauseMainButtons.Length; i++) {
+            pauseMainButtons[i].GetComponent<CanvasGroup>().alpha = index == i ? 1 : inactivePauseButtonDarkenIntensity;
+            pauseMainButtons[i].GetComponent<CanvasGroup>().interactable = !(index == i);
         }
     }
 
     public void ExitPausedUI() {
-        for(int i = 0; i < pausedUIObjects.Length; i++) {
-            pausedUIObjects[i].SetActive(false);
+        for(int i = 0; i < pauseMainChildren.Length; i++) {
+            pauseMainChildren[i].SetActive(false);
         }
         pausedUIText.SetActive(true);
     }
