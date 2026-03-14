@@ -29,7 +29,7 @@ public class Enemy : MonoBehaviour {
 
     #region private vars
     private NavMeshAgent agent;
-    private Transform player;
+    private Transform playerTransform, cachedTransform;
     private bool walkPointSet, alreadyAttacked, takeDamage, waitingForScream = false, pausingPatrolState = false;
     public bool  normalAggro = true;
     private ConeLOSDetector coneDetector;
@@ -42,20 +42,20 @@ public class Enemy : MonoBehaviour {
 
     private void Awake() {
         //animator = GetComponent<Animator>();
-        player = GameObject.Find("Player").transform;
-        playersBreath = player.GetComponentInChildren<ParticleSystem>();
+        playerTransform = GameObject.Find("Player").transform;
+        playersBreath = playerTransform.GetComponentInChildren<ParticleSystem>();
         agent = GetComponent<NavMeshAgent>();
         coneDetector = GetComponent<ConeLOSDetector>();
         agent.updateRotation = false;
-        playerVision = player.GetChild(1).GetChild(0).GetComponent<ConeLOSDetector>();
+        playerVision = playerTransform.GetChild(1).GetChild(0).GetComponent<ConeLOSDetector>();
     }
 
 
     // Update is called once per frame
     private void Update() {
         if(allowedToMove) {
-            bool playerSeen = coneDetector.targetVisible && !player.GetComponent<PlayerMovement>().isHiding && normalAggro;// && //!player.GetComponent<PlayerMovement>().isHiding;
-            bool playerInAttackRange = Physics.CheckSphere(transform.position, attackRange, playerLayer) && normalAggro;
+            bool playerSeen = coneDetector.targetVisible && !playerTransform.GetComponent<PlayerMovement>().isHiding && normalAggro;// && //!player.GetComponent<PlayerMovement>().isHiding;
+            bool playerInAttackRange = Physics.CheckSphere(cachedTransform.position, attackRange, playerLayer) && normalAggro;
             // If I can't see you and you're not in melee range OR you're hiding
             if(!playerSeen && !playerInAttackRange) {
                 if((chaseMeter == 100f || invisible) || !normalAggro) {
@@ -81,7 +81,7 @@ public class Enemy : MonoBehaviour {
                     else chaseMeter = 80f;
 
                     // if its not the ritual and I see your back, do silent. else:
-                    if(!GetComponent<ConeLOSDetector>().visibilityOverride && !playerVision.targetVisible && transform.parent.GetComponentInChildren<ToolController>().heldIndex != 1) {
+                    if(!GetComponent<ConeLOSDetector>().visibilityOverride && !playerVision.targetVisible && cachedTransform.parent.GetComponentInChildren<ToolController>().heldIndex != 1) {
                         ModeChase();
                         // We still want to Fade to chase music if player now turns and sees. Or maybe not necessary.
                         Debug.Log("Saw you with back turned. ");
@@ -94,12 +94,12 @@ public class Enemy : MonoBehaviour {
                     }
 
 
-                    playerLastSeen = player.position;
+                    playerLastSeen = playerTransform.position;
                 }
                 else if(currentMode == Mode.chasing) {
                     chaseMeter -= 1f * Time.deltaTime;
                     if(chaseMeter < 0f) chaseMeter = 0f;
-                    playerLastSeen = player.position;
+                    playerLastSeen = playerTransform.position;
                 }
 
                 if(!waitingForScream) ModeChase();
@@ -117,15 +117,15 @@ public class Enemy : MonoBehaviour {
             //}
 
             if(waitingForScream) {
-                Vector3 direction = player.position - transform.position;
+                Vector3 direction = playerTransform.position - cachedTransform.position;
                 direction.y = 0f; // ignore vertical difference
 
                 if(direction.sqrMagnitude < 0.0001f)
                     return;
 
                 Quaternion targetRotation = Quaternion.LookRotation(direction);
-                transform.rotation = Quaternion.Slerp(
-                    transform.rotation,
+                cachedTransform.rotation = Quaternion.Slerp(
+                    cachedTransform.rotation,
                     targetRotation,
                     rotationSpeed * Time.deltaTime
                 );
@@ -143,12 +143,12 @@ public class Enemy : MonoBehaviour {
             RaycastHit hit;
 
             // Left
-            if(Physics.Raycast(transform.position, -transform.right, out hit, checkDistance)) {
+            if(Physics.Raycast(cachedTransform.position, -cachedTransform.right, out hit, checkDistance)) {
                 repulsion += hit.normal;
             }
 
             // Right
-            if(Physics.Raycast(transform.position, transform.right, out hit, checkDistance)) {
+            if(Physics.Raycast(cachedTransform.position, cachedTransform.right, out hit, checkDistance)) {
                 repulsion += hit.normal;
             }
 
@@ -162,8 +162,8 @@ public class Enemy : MonoBehaviour {
             );
             if(finalVelocity.sqrMagnitude > 0.01f) {
                 Quaternion rot = Quaternion.LookRotation(finalVelocity);
-                transform.rotation = Quaternion.Slerp(
-                    transform.rotation,
+                cachedTransform.rotation = Quaternion.Slerp(
+                    cachedTransform.rotation,
                     rot,
                     Time.deltaTime * 6f
                 );
@@ -203,32 +203,32 @@ public class Enemy : MonoBehaviour {
 
         if(pausingPatrolState) { // I think this is the problem-the position in code. Causing scream and aggro to not work properly
             // because we are never getting a walkpointset?
-            agent.SetDestination(transform.position); // stop agent
+            agent.SetDestination(cachedTransform.position); // stop agent
             return;
         }
 
         if(!walkPointSet) {
-            Vector3 point = RandomNavSphere(transform.position, walkPointRange, groundLayer);
+            Vector3 point = RandomNavSphere(cachedTransform.position, walkPointRange, groundLayer);
             
             // Means we found something valid.
-            if(point != transform.position) {
+            if(point != cachedTransform.position) {
                 walkPoint = point;
                 walkPointSet = true;
                 if(!invisible && Random.Range(0, pauseChance) == 0) StartCoroutine(PausingPatrol());
                 // Go invis, but only if not close to player and it's not the ritual.
                 else if(!GetComponent<ConeLOSDetector>().visibilityOverride && ((Random.Range(0, invisibilityOdds) != 0 && !invisible) || 
-                    (Random.Range(0, invisibilityOdds) == 0 && invisible && Vector3.Distance(player.position, transform.position) > walkPointRange * 0.15f)) ) {
+                    (Random.Range(0, invisibilityOdds) == 0 && invisible && Vector3.Distance(playerTransform.position, cachedTransform.position) > walkPointRange * 0.15f)) ) {
                     InvertVisibility();
                 }
 
-                if(freezingAura && Vector3.Distance(player.position, transform.position) < walkPointRange * 1.75f && !playersBreath.isPlaying) playersBreath.Play();
-                else if(freezingAura && Vector3.Distance(player.position, transform.position) > walkPointRange * 1.75f && playersBreath.isPlaying) playersBreath.Stop();
+                if(freezingAura && Vector3.Distance(playerTransform.position, cachedTransform.position) < walkPointRange * 1.75f && !playersBreath.isPlaying) playersBreath.Play();
+                else if(freezingAura && Vector3.Distance(playerTransform.position, cachedTransform.position) > walkPointRange * 1.75f && playersBreath.isPlaying) playersBreath.Stop();
             }
         }
         else {
             agent.SetDestination(walkPoint);
         }
-        Vector3 distanceToWalkPoint = transform.position - walkPoint;
+        Vector3 distanceToWalkPoint = cachedTransform.position - walkPoint;
         agent.speed = walkSpeed;
         if(distanceToWalkPoint.magnitude < 1f) {
             walkPointSet = false;
@@ -245,19 +245,19 @@ public class Enemy : MonoBehaviour {
     private void SearchWalkPoint() {
         float randomZ = Random.Range(-walkPointRange, walkPointRange);
         float randomX = Random.Range(-walkPointRange, walkPointRange);
-        walkPoint = new Vector3(transform.position.x + randomX, transform.position.y, transform.position.z + randomZ);
+        walkPoint = new Vector3(cachedTransform.position.x + randomX, cachedTransform.position.y, cachedTransform.position.z + randomZ);
 
-        if(Physics.Raycast(walkPoint, -transform.up, 2f, groundLayer)) {
+        if(Physics.Raycast(walkPoint, -cachedTransform.up, 2f, groundLayer)) {
            walkPointSet = true;
         }
     }
 
     private void ModeChase() {
         currentMode = Mode.chasing;
-        if(player.gameObject.GetComponent<PlayerMovement>().isHiding) agent.SetDestination(playerLastSeen);
-        else agent.SetDestination(player.position);
-        if(player.gameObject.GetComponent<PlayerMovement>().isHiding) walkPoint = playerLastSeen;
-        else walkPoint = player.position;
+        if(playerTransform.gameObject.GetComponent<PlayerMovement>().isHiding) agent.SetDestination(playerLastSeen);
+        else agent.SetDestination(playerTransform.position);
+        if(playerTransform.gameObject.GetComponent<PlayerMovement>().isHiding) walkPoint = playerLastSeen;
+        else walkPoint = playerTransform.position;
         walkPointSet = true;
         // animator.SetFloat("Velocity", 11);
         agent.speed = runSpeed;
@@ -311,17 +311,17 @@ public class Enemy : MonoBehaviour {
     }
 
     private void AttackPlayer() {
-        agent.SetDestination(transform.position);
+        agent.SetDestination(cachedTransform.position);
 
         if(!alreadyAttacked) {
-            transform.LookAt(player.position);
+            cachedTransform.LookAt(playerTransform.position);
             alreadyAttacked = true;
             //animator.SetBool("Attack", true);
 
             Invoke(nameof(ResetAttack), timeBetweenAttacks);
 
             RaycastHit hit;
-            if(Physics.Raycast(transform.position, transform.forward, out hit, attackRange + 4)) {
+            if(Physics.Raycast(cachedTransform.position, cachedTransform.forward, out hit, attackRange + 4)) {
                 /*
                  * You can use this to get the player HUD and call the take damage function.
                  * 
@@ -372,9 +372,9 @@ public class Enemy : MonoBehaviour {
 
     private void OnDrawGizmosSelected() {
         Gizmos.color = Color.red;
-        Gizmos.DrawWireSphere(transform.position, attackRange);
+        Gizmos.DrawWireSphere(cachedTransform.position, attackRange);
         Gizmos.color = Color.yellow;
-        Gizmos.DrawWireSphere(transform.position, walkPointRange);
+        Gizmos.DrawWireSphere(cachedTransform.position, walkPointRange);
     }
 
     public Vector3 RandomNavSphere(Vector3 origin, float dist, int layermask) {

@@ -40,11 +40,12 @@ public class PlayerMovement : MonoBehaviour {
 
     private Vector3 fallingVelocity, originalScale;
     private Color stamBarUIColor;
-
+    private Transform cachedTransform;
 
     private void Awake() {
         //sprintRemaining = sprintDuration;
-        originalScale = transform.localScale;
+        cachedTransform = GetComponent<Transform>();
+        originalScale = cachedTransform.localScale;
         stamBarUIColor = sprintBar.color;
     }
 
@@ -86,16 +87,15 @@ public class PlayerMovement : MonoBehaviour {
     }
 
     void Update() {
-
         // MOVEMENT Section
-        Vector3 inputVector = transform.right * Input.GetAxis("Horizontal") + transform.forward * Input.GetAxis("Vertical");
+        Vector3 inputVector = cachedTransform.right * Input.GetAxis("Horizontal") + cachedTransform.forward * Input.GetAxis("Vertical");
         if(inputVector.magnitude > 1)
             inputVector.Normalize();
         if(allowedToMove)
             controller.Move(inputVector * sprintActualMultiplier * speed * Time.deltaTime);
 
         // CROUCH Section
-        transform.localScale = new Vector3(originalScale.x, Mathf.Clamp(currentHeight -= (isCrouched ? 2f : -2f) * Time.deltaTime, crouchHeight, originalScale.y), originalScale.z);
+        cachedTransform.localScale = new Vector3(originalScale.x, Mathf.Clamp(currentHeight -= (isCrouched ? 2f : -2f) * Time.deltaTime, crouchHeight, originalScale.y), originalScale.z);
 
         if(allowedToCrouch && allowedToMove && (Input.GetKeyDown(crouchKey) || Input.GetKeyUp(crouchKey)) ) {
             isCrouched = !Input.GetKeyDown(crouchKey);
@@ -124,7 +124,7 @@ public class PlayerMovement : MonoBehaviour {
             sprintRemaining = Mathf.Clamp(sprintRemaining += sprintRecoveryDec * Time.deltaTime, 0, sprintDuration);
         }
 
-        if(useSprintBar) sprintBar.rectTransform.sizeDelta = new Vector2(sprintRemaining / sprintDuration * 175, sprintBar.rectTransform.sizeDelta.y); //sprintBar.transform.localScale = new Vector3(sprintRemaining / sprintDuration, 1f, 1f);
+        if(useSprintBar) sprintBar.rectTransform.sizeDelta = new Vector2(sprintRemaining / sprintDuration * 175, sprintBar.rectTransform.sizeDelta.y);
 
         if(sprintRemaining <= 0) {
             isTired = true;
