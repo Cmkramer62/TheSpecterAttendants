@@ -2,8 +2,8 @@ using UnityEngine;
 
 public class ConeLOSDetector : MonoBehaviour {
 
-    private Transform thisGameObject; // Reference to the player GameObject
-    public Transform target; // Reference to the monster GameObject
+    private Transform thisTransform; // Reference to the player GameObject
+    public Transform targetTransform; // Reference to the monster GameObject
     public float fieldOfViewAngle = 90f; // The field of view angle of the monster
     public int viewDistance = 20; // How far away the player can be without being seen.
 
@@ -13,7 +13,7 @@ public class ConeLOSDetector : MonoBehaviour {
     public bool inViewDist = false, inFieldOfView = false, inLineOfSight = false;
 
     private void OnEnable() {
-        thisGameObject = gameObject.transform;
+        thisTransform = gameObject.transform;
     }
 
 
@@ -23,7 +23,7 @@ public class ConeLOSDetector : MonoBehaviour {
     private void Update() {
         inViewDist = IsPlayerInViewDistance();
         inFieldOfView = IsPlayerInFieldOfView();
-        inLineOfSight = IsPlayerInLineOfSight(thisGameObject);
+        inLineOfSight = IsPlayerInLineOfSight(thisTransform);
 
         if(visibilityOverride || (inViewDist && inFieldOfView && inLineOfSight)){
             targetVisible = true;
@@ -39,8 +39,8 @@ public class ConeLOSDetector : MonoBehaviour {
      * Returns true if this is the case.
      */
     private bool IsPlayerInFieldOfView() {
-        Vector3 directionToPlayer = thisGameObject.transform.position - target.position;
-        float angle = Vector3.Angle(thisGameObject.transform.forward, directionToPlayer);
+        Vector3 directionToPlayer = thisTransform.position - targetTransform.position;
+        float angle = Vector3.Angle(thisTransform.forward, directionToPlayer);
 
         if(angle >= (360 - fieldOfViewAngle) * 0.5f) {
             return true;
@@ -56,10 +56,10 @@ public class ConeLOSDetector : MonoBehaviour {
     private bool IsPlayerInLineOfSight(Transform targetFOV) {
         RaycastHit hit;
 
-        Vector3 directionToPlayer = target.transform.position - gameObject.transform.position;
+        Vector3 directionToPlayer = targetTransform.position - thisTransform.position;
 
-        if(Physics.Raycast(transform.position, directionToPlayer, out hit, Mathf.Infinity, ~ignoreMeLayer)) {
-            if(hit.transform.name.Equals(target.name)) {
+        if(Physics.Raycast(thisTransform.position, directionToPlayer, out hit, Mathf.Infinity, ~ignoreMeLayer)) {
+            if(hit.transform.name.Equals(targetTransform.name)) {
                 return true;
             }
         }
@@ -71,7 +71,7 @@ public class ConeLOSDetector : MonoBehaviour {
      * Returns true if this is the case.
      */
     private bool IsPlayerInViewDistance() {
-        if(Vector3.Distance(target.position, thisGameObject.position) < viewDistance) return true;
+        if(Vector3.Distance(targetTransform.position, thisTransform.position) < viewDistance) return true;
         else return false;
     }
 
