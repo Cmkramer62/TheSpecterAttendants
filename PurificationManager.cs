@@ -28,8 +28,8 @@ public class PurificationManager : MonoBehaviour {
     }
 
     public void StartPurificationRitual() {
-        DisplayQuestion();
-  
+        DisplayQuestion(); // Turning off the question UI.
+        GetComponent<CurseGameManager>().purifyState = potentialCursedItem.name == "Goal Curse" ? -1 : 1;
         purifyRoutine = StartCoroutine(PurificationTimer());
 
         if(ghostScript.invisible) ghostScript.InvertVisibility();

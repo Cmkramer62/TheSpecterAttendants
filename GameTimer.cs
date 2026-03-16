@@ -7,7 +7,7 @@ using UnityEngine.Rendering.Universal;
 public class GameTimer : MonoBehaviour {
 
     public GameObject[] flameObjects;
-    public int totalTimeLimit;
+    public int totalTimeLimit, timeSpent = 0;
     public int minFlameTick = 3, maxFlameTick = 10;
     public Volume mainVolume;
     public Death deathScript;
@@ -66,6 +66,8 @@ public class GameTimer : MonoBehaviour {
     private IEnumerator Tick() {
         yield return new WaitForSeconds(1f);
         totalTimeLimit--;
+        timeSpent++;
+        GetComponent<CurseGameManager>().timeSpent = timeSpent;
 
         int diff = flameObjects.Length / 3;
 

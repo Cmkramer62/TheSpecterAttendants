@@ -11,12 +11,12 @@ public class EndPortal : MonoBehaviour {
     public bool activated;
 
     public AudioSource source, ghostSource;
-    public AudioClip enterClip, enterWrongClip, leaveClip, correctClip, ghostDeathClip;
+    public AudioClip enterClip, leaveClip, correctClip, ghostDeathClip;
 
     public Animator portalAnimation;
     public Enemy ghostScript;
 
-    public AudioSettings saveSystem;
+    public SaveDataHandler saveSystem;
 
     private void OnTriggerEnter(Collider other) {
         if(activated && other.name == "Player") {
@@ -39,14 +39,18 @@ public class EndPortal : MonoBehaviour {
     }
 
     private IEnumerator EndGoalTimer() {
-        source.PlayOneShot(purificationScript.potentialCursedItem.name == "Goal Curse" ? enterClip : enterWrongClip);
+        //purificationScript.GetComponent<CurseGameManager>().purifyState = purificationScript.potentialCursedItem.name == "Goal Curse" ? enterClip : enterWrongClip
+        source.PlayOneShot(enterClip);
 
         yield return new WaitForSeconds(1f);
        
 
 
         if(purificationScript.potentialCursedItem.name == "Goal Curse") {
-            saveSystem.SetLevel(1);
+            //saveSystem.SetLevel(1);
+            saveSystem.SetMissionData(1, purificationScript.GetComponent<CurseGameManager>().timeSpent, purificationScript.GetComponent<CurseGameManager>().livesLeft,
+                purificationScript.GetComponent<CurseGameManager>().timeSpotted, purificationScript.GetComponent<CurseGameManager>().longestChase, purificationScript.GetComponent<CurseGameManager>().purifyState);
+
             portalAnimation.Play("WipeAwayAnim");
             source.PlayOneShot(correctClip);
             yield return new WaitForSeconds(.5f);

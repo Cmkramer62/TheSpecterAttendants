@@ -43,7 +43,7 @@ public class HidingSpot : MonoBehaviour {
         player.GetComponent<CharacterController>().enabled = false;
         player.transform.GetChild(1).GetChild(0).GetComponent<InteractRaycast>().allowedToRaycast = false;
         player.GetComponent<PlayerMovement>().isHiding = true;
-        if(player.GetComponent<PlayerMovement>().enemyVisionScript.targetVisible) player.GetComponent<PlayerMovement>().enemyVisionScript.GetComponent<Enemy>().playerLastSeen = transform.position;
+        if(player.GetComponent<PlayerMovement>().enemyVisionScript.targetVisible) player.GetComponent<PlayerMovement>().enemyVisionScript.GetComponent<Enemy>().playerLastSeen.position = transform.position;
         storedItem = player.transform.parent.GetComponentInChildren<ToolController>().heldIndex;
         player.transform.parent.GetComponentInChildren<ToolController>().ForceToBarehand();
         StartCoroutine(HideTimer());

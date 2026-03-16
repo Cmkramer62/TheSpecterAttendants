@@ -19,11 +19,13 @@ public class Death : MonoBehaviour {
     [HideInInspector]
     public GameObject realGhostChild;
 
-    public AudioSettings saveSystem;
+    public SaveDataHandler saveSystem;
     public AudioMixer masterMixer;
 
     public void Jumpscare() {
-        saveSystem.SetLevel(-1);
+        //saveSystem.SetLevel(-1);
+        saveSystem.SetMissionData(-1, GetComponent<CurseGameManager>().timeSpent, GetComponent<CurseGameManager>().livesLeft,
+            GetComponent<CurseGameManager>().timeSpotted, GetComponent<CurseGameManager>().longestChase, GetComponent<CurseGameManager>().purifyState);
         StartCoroutine(JumpscareTimer());
     }
 
@@ -48,8 +50,8 @@ public class Death : MonoBehaviour {
         jumpscareObject.SetActive(true);
         realGhostChild.transform.GetChild(1).GetComponent<Animator>().Play("JumpscareFaceAnimator");
 
-        source.PlayOneShot(jumpscareClip, .4f);
-        Debug.Log("J soiund");
+        source.PlayOneShot(jumpscareClip, 0.4f);
+        //Debug.Log("J soiund");
         Cursor.lockState = CursorLockMode.None;
         GetComponent<PauseGame>().normalUI.SetActive(false);
         GetComponent<PauseGame>().pausedUI.SetActive(false);
@@ -62,7 +64,7 @@ public class Death : MonoBehaviour {
         realGhostChild.GetComponent<Animator>().speed = 0;
         
         if(GetComponent<PurificationManager>().cursedObjectScript != null) AudioController.FadeOutAudio(this, GetComponent<PurificationManager>().cursedObjectScript.pSourceB, .5f);
-        yield return new WaitForSeconds(1f);
+        yield return new WaitForSeconds(2.5f);
         deathUI.SetActive(true);
 
         //SceneManager.LoadScene(SceneManager.GetActiveScene().buildIndex);
@@ -84,6 +86,7 @@ public class Death : MonoBehaviour {
             // player is dead.
             bloodUI[3 - lives].SetActive(true);
             heartsUI[lives - 1].GetComponent<Animator>().Play("HeartIconLoss");
+            GetComponent<CurseGameManager>().livesLeft = 0;
             source.PlayOneShot(stingerClips[3 - lives]);
             if(allowDeath) Jumpscare();
             else {
@@ -100,7 +103,7 @@ public class Death : MonoBehaviour {
             bloodUI[3 - lives].SetActive(false);
             heartsUI[lives - 1].transform.GetChild(1).gameObject.SetActive(false);
             lives--;
-
+            GetComponent<CurseGameManager>().livesLeft = lives;
         }
     }
 

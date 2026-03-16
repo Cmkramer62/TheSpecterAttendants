@@ -17,7 +17,7 @@ public class SceneLoader : MonoBehaviour {
     public int levelNumber = -1;
     public Inventory inventoryScript;
     public AudioSource[] sourcesToFade;
-    public AudioSettings saveSystem;
+    public SaveDataHandler saveSystem;
     public AudioMixer masterMixer;
 
     private void Start() {

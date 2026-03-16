@@ -23,18 +23,20 @@ public class Enemy : MonoBehaviour {
     public AudioClip[] screamClips;
 
     public Death deathScript;
-    public Vector3 walkPoint, playerLastSeen;
+    public Vector3 walkPoint;
     public Animator animator, shadowAnimator;
 
+    public Transform playerLastSeen;
 
     #region private vars
     private NavMeshAgent agent;
-    private Transform playerTransform, cachedTransform;
+    public Transform playerTransform {get; private set;}
+    private Transform cachedTransform;
     private bool walkPointSet, alreadyAttacked, takeDamage, waitingForScream = false, pausingPatrolState = false;
-    public bool  normalAggro = true;
+    public bool normalAggro = true;
     private ConeLOSDetector coneDetector;
     private ParticleSystem playersBreath;
-    private float initSpeed;
+    private float initSpeed, longestChaseDuration = 0, currentChaseDuration = 0;
 
     private ConeLOSDetector playerVision;
     #endregion
@@ -48,6 +50,7 @@ public class Enemy : MonoBehaviour {
         coneDetector = GetComponent<ConeLOSDetector>();
         agent.updateRotation = false;
         playerVision = playerTransform.GetChild(1).GetChild(0).GetComponent<ConeLOSDetector>();
+        cachedTransform = gameObject.transform;
     }
 
 
@@ -56,7 +59,7 @@ public class Enemy : MonoBehaviour {
         if(allowedToMove) {
             bool playerSeen = coneDetector.targetVisible && !playerTransform.GetComponent<PlayerMovement>().isHiding && normalAggro;// && //!player.GetComponent<PlayerMovement>().isHiding;
             bool playerInAttackRange = Physics.CheckSphere(cachedTransform.position, attackRange, playerLayer) && normalAggro;
-            // If I can't see you and you're not in melee range OR you're hiding
+            // If I can't see you and you're not in melee range
             if(!playerSeen && !playerInAttackRange) {
                 if((chaseMeter == 100f || invisible) || !normalAggro) {
                     if(currentMode == Mode.chasing) {
@@ -64,8 +67,14 @@ public class Enemy : MonoBehaviour {
                         walkPointSet = false;
                     }
                     ModePatrolling();
+                    if(currentChaseDuration > longestChaseDuration) {
+                        longestChaseDuration = currentChaseDuration;
+                        deathScript.GetComponent<CurseGameManager>().longestChase = (int)longestChaseDuration;
+                        currentChaseDuration = 0f;
+                    }
                 }
                 else {
+                    currentChaseDuration += 1 * Time.deltaTime;
                     chaseMeter += 2 * Time.deltaTime;
                     if(chaseMeter > 100f) chaseMeter = 100f;
                     if(chaseMeter >= 100f) walkPointSet = false;
@@ -77,7 +86,7 @@ public class Enemy : MonoBehaviour {
             // If I'm not invis and I see you and you're NOT in melee range
             else if(normalAggro && !invisible && playerSeen && !playerInAttackRange) {
                 if(currentMode != Mode.chasing && !waitingForScream) {
-                    if(GetComponent<ConeLOSDetector>().visibilityOverride) chaseMeter = -9999f;
+                    if(GetComponent<ConeLOSDetector>().visibilityOverride) chaseMeter = 30f;
                     else chaseMeter = 80f;
 
                     // if its not the ritual and I see your back, do silent. else:
@@ -92,14 +101,14 @@ public class Enemy : MonoBehaviour {
                         Debug.Log("Saw you when you saw me. ");
 
                     }
+                    deathScript.GetComponent<CurseGameManager>().timeSpotted++;
 
-
-                    playerLastSeen = playerTransform.position;
+                    playerLastSeen.position = playerTransform.position;
                 }
                 else if(currentMode == Mode.chasing) {
                     chaseMeter -= 1f * Time.deltaTime;
                     if(chaseMeter < 0f) chaseMeter = 0f;
-                    playerLastSeen = playerTransform.position;
+                    playerLastSeen.position = playerTransform.position;
                 }
 
                 if(!waitingForScream) ModeChase();
@@ -214,12 +223,13 @@ public class Enemy : MonoBehaviour {
             if(point != cachedTransform.position) {
                 walkPoint = point;
                 walkPointSet = true;
-                if(!invisible && Random.Range(0, pauseChance) == 0) StartCoroutine(PausingPatrol());
+                
                 // Go invis, but only if not close to player and it's not the ritual.
-                else if(!GetComponent<ConeLOSDetector>().visibilityOverride && ((Random.Range(0, invisibilityOdds) != 0 && !invisible) || 
-                    (Random.Range(0, invisibilityOdds) == 0 && invisible && Vector3.Distance(playerTransform.position, cachedTransform.position) > walkPointRange * 0.15f)) ) {
+                if(!GetComponent<ConeLOSDetector>().visibilityOverride && ((Random.Range(0, invisibilityOdds) != 0 && !invisible) || 
+                    (Random.Range(0, invisibilityOdds) == 0 && invisible && Vector3.Distance(playerTransform.position, cachedTransform.position) > walkPointRange * 0.5f)) ) {
                     InvertVisibility();
                 }
+                else if(!invisible && Random.Range(0, pauseChance) == 0) StartCoroutine(PausingPatrol());
 
                 if(freezingAura && Vector3.Distance(playerTransform.position, cachedTransform.position) < walkPointRange * 1.75f && !playersBreath.isPlaying) playersBreath.Play();
                 else if(freezingAura && Vector3.Distance(playerTransform.position, cachedTransform.position) > walkPointRange * 1.75f && playersBreath.isPlaying) playersBreath.Stop();
@@ -254,9 +264,9 @@ public class Enemy : MonoBehaviour {
 
     private void ModeChase() {
         currentMode = Mode.chasing;
-        if(playerTransform.gameObject.GetComponent<PlayerMovement>().isHiding) agent.SetDestination(playerLastSeen);
+        if(playerTransform.gameObject.GetComponent<PlayerMovement>().isHiding) agent.SetDestination(playerLastSeen.position);
         else agent.SetDestination(playerTransform.position);
-        if(playerTransform.gameObject.GetComponent<PlayerMovement>().isHiding) walkPoint = playerLastSeen;
+        if(playerTransform.gameObject.GetComponent<PlayerMovement>().isHiding) walkPoint = playerLastSeen.position;
         else walkPoint = playerTransform.position;
         walkPointSet = true;
         // animator.SetFloat("Velocity", 11);
@@ -372,9 +382,9 @@ public class Enemy : MonoBehaviour {
 
     private void OnDrawGizmosSelected() {
         Gizmos.color = Color.red;
-        Gizmos.DrawWireSphere(cachedTransform.position, attackRange);
+        Gizmos.DrawWireSphere(transform.position, attackRange);
         Gizmos.color = Color.yellow;
-        Gizmos.DrawWireSphere(cachedTransform.position, walkPointRange);
+        Gizmos.DrawWireSphere(transform.position, walkPointRange);
     }
 
     public Vector3 RandomNavSphere(Vector3 origin, float dist, int layermask) {

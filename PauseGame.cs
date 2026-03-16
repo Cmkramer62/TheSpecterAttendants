@@ -26,7 +26,8 @@ public class PauseGame : MonoBehaviour {
         }
     }
 
-    private void PauseGameHandler() {
+    // Pauses game if playing, unpauses if paused. Can be remotely called by the PostRoundManager
+    public void PauseGameHandler() {
         if(!pauseCooldown && !paused) {
             source.PlayOneShot(openClip);
             normalUI.SetActive(false);

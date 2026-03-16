@@ -90,7 +90,7 @@ public class CursedObject : MonoBehaviour {
 
             CursedTypes curseToAdd;
             int rand = Random.Range(0, 6);
-            Debug.Log("anti int " + antiInt);
+            //Debug.Log("anti int " + antiInt);
             if(rand == antiInt) {
                 if(antiInt == 0 && rand == 0) rand += Random.Range(1, 4);
                 else if(antiInt == 5 && rand == 5) rand -= Random.Range(1, 4);

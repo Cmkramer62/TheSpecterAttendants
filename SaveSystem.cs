@@ -6,8 +6,11 @@ public static class SaveSystem {
     private static string path => Application.persistentDataPath + "/hideData.json";
 
     // SAVE
-    public static void Save(int level, float masterVolume, float sfxVolume, float musicVolume, float ambientVolume, bool hubState) {
-        SaveData data = new SaveData(level, masterVolume, sfxVolume, musicVolume, ambientVolume, hubState);
+    public static void Save(int level, float masterVolume, float sfxVolume, float musicVolume, float ambientVolume, bool hubState, int soulShards,
+            int missionDataTimeSpent, int missionDataLivesLeft, int missionDataTimeSpotted, int missionDataLongestChase, int missionDataPurified) {
+
+        SaveData data = new SaveData(level, masterVolume, sfxVolume, musicVolume, ambientVolume, hubState, soulShards,
+            missionDataTimeSpent, missionDataLivesLeft, missionDataTimeSpotted, missionDataLongestChase, missionDataPurified);
 
         string json = JsonUtility.ToJson(data, true); // true = pretty print (optional)
         File.WriteAllText(path, json);

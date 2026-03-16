@@ -16,13 +16,13 @@ public class PlayerMovement : MonoBehaviour {
     private float sprintActualMultiplier = 1f;
 
     [SerializeField]
-    private bool shouldBeSlowed = false, lockCursor = true, isTired = false, useSprintBar = true, hideBarWhenFull = true;
+    private bool shouldBeSlowed = false, isTired = false, useSprintBar = true, hideBarWhenFull = true;
     public bool allowedToMove = true, allowedToCrouch = true, isSprinting = false, isCrouched = false, isHiding = false;
 
     [SerializeField]
     public Image sprintBarBG, sprintBar;
     public CharacterController controller;
-
+    public bool lockCursor = true;
     public Transform groundCheck;
     public float groundDistance = 0.4f, amountCrouchSpots = 0f;
     public LayerMask groundMask;

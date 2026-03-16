@@ -22,7 +22,7 @@ public class InteractPrompt : MonoBehaviour {
             if(textPromptScript == null) textPromptScript = GameObject.Find("Game Manager").GetComponent<TextPrompter>();
             textPromptScript.source.PlayOneShot(interactWithSound, volumeOfPopup);
 
-            if(hubTutorial) GameObject.FindAnyObjectByType<AudioSettings>().SetHubFirst();
+            if(hubTutorial) GameObject.FindAnyObjectByType<SaveDataHandler>().SetHubFirst();
         }
     }
 

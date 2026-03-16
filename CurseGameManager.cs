@@ -25,8 +25,10 @@ public class CurseGameManager : MonoBehaviour {
     public GameObject[] enviroParticles;
     public GhostRandomizer ghostRandomizer;
     public ObjectivesUI objectivesScript;
-    //public ParticleSystem auraEnviroParticles;
-    
+
+    public int timeSpent = 0, livesLeft = 3, timeSpotted = 0, longestChase = 0, purifyState = 0;
+    // purified, not purified, incorrect object purified
+
     // Start is called before the first frame update
     void Start() {
 
