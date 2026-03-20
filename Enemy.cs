@@ -7,7 +7,7 @@ public class Enemy : MonoBehaviour {
 
     public LayerMask groundLayer, playerLayer;
     public float health, walkPointMin, walkPointRange, timeBetweenAttacks, attackRange, walkSpeed, runSpeed, chaseMeter = 100f, rotationSpeed = 5f;
-    public int damage, invisibilityOdds = 3, pauseChance = 4, deAggroCooldown = 10;
+    [SerializeField] private int damage, invisibilityOdds = 3, pauseChance = 4, deAggroCooldown = 10, eventCharge = 0;
     public ParticleSystem hitEffect;
     public bool invisible = false, freezingAura = false, attractedToSound = false, allowedToMove = true, geistAura = false;
     public SkinnedMeshRenderer[] meshRenderers;
@@ -224,7 +224,7 @@ public class Enemy : MonoBehaviour {
             if(point != cachedTransform.position) {
                 walkPoint = point;
                 walkPointSet = true;
-                
+
                 /*
                  * int i = 0; 0 = 0% chance.
                  * event raises by 1. 1 = 25% chance. 2 = 50% chance.
@@ -233,10 +233,21 @@ public class Enemy : MonoBehaviour {
                  */
 
                 // Go invis, but only if not close to player and it's not the ritual.
+                /*
                 if(!GetComponent<ConeLOSDetector>().visibilityOverride && ((Random.Range(0, invisibilityOdds) != 0 && !invisible) || 
                     (Random.Range(0, invisibilityOdds) == 0 && invisible && Vector3.Distance(playerTransform.position, cachedTransform.position) > walkPointRange * 0.5f)) ) {
                     InvertVisibility();
+                }*/
+                // INVIS -> VISI
+                if(!GetComponent<ConeLOSDetector>().visibilityOverride && invisible && eventCharge > 0 && Vector3.Distance(playerTransform.position, cachedTransform.position) > walkPointRange * 0.5f) {
+                    eventCharge--;
+                    InvertVisibility();
+                    // foreach player withing radius walk point range, flicker their lanterns.
                 }
+                // else only go VISI -> INVIS when hitting a player
+                //else if(!GetComponent<ConeLOSDetector>().visibilityOverride && invisible && eventCharge > 0) {
+
+                //}
                 else if(!invisible && Random.Range(0, pauseChance) == 0) StartCoroutine(PausingPatrol());
 
                 if(freezingAura && Vector3.Distance(playerTransform.position, cachedTransform.position) < walkPointRange * 1.75f && !playersBreath.isPlaying) playersBreath.Play();
@@ -281,6 +292,10 @@ public class Enemy : MonoBehaviour {
         agent.speed = runSpeed;
         agent.isStopped = false; // Add this line
         
+    }
+
+    public void IncreaseCharges() {
+        eventCharge++;
     }
 
     public void InvertVisibility() {
