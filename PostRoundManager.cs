@@ -42,9 +42,9 @@ public class PostRoundManager : MonoBehaviour {
     public void DisplayPostRoundResults(bool success, int secondsSpent, int livesLeft, int timeSpotted, int longestChase, int purified) {
         Debug.Log("Recieved Post");
         missionSuccessText.GetComponent<TextAdder>().endWord = success ? "Mission: Success" : "Mission: Failed";
-        string purifyResult = "Incorrect object purified";
-        if(purified == -1) purifyResult = "Purified";
-        else if(purified == 0) purifyResult = "Not purified";
+        string purifyResult = "Wrong curse broken";
+        if(purified == -1) purifyResult = "Broken";
+        else if(purified == 0) purifyResult = "Not broken";
         purifiedText.GetComponent<TextAdder>().endWord = purifyResult;
         timeSpentText.GetComponent<TextAdder>().endWord = (secondsSpent / 60) + " min " + (secondsSpent % 60) + " sec";
         livesLeftText.GetComponent<TextAdder>().endWord = livesLeft.ToString();

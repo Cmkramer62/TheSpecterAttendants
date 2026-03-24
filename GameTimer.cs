@@ -16,7 +16,7 @@ public class GameTimer : MonoBehaviour {
     public AudioSource source;
     public AudioClip[] warningClipsA, warningClipsB, warningClipsC;
     [SerializeField] private AudioClip rumbleSmall, rumbleMedium, rumbleLarge;
-
+    [SerializeField] private ParticleSystem[] rumbleParticlesSmall, rumbleParticlesMedium, rumbleParticlesLarge;
     public Material smokeMaterial;
 
     public bool startTimer = true;
@@ -59,7 +59,7 @@ public class GameTimer : MonoBehaviour {
             if(secondsOfTimer <= stageOne) vignetteComponent.intensity.value = Mathf.Lerp(0.203f, 1f, t);
             */
             if(totalTimeLimit <= stageTwo) {
-                vignetteComponent.intensity.value = Mathf.Lerp(vignetteComponent.intensity.value, 1f, Time.deltaTime / totalTimeLimit);
+                vignetteComponent.intensity.value = Mathf.Lerp(vignetteComponent.intensity.value, .8f, Time.deltaTime / totalTimeLimit);
                 Color c = smokeMaterial.color;
                 c.a = Mathf.Lerp(c.a, .8f, Time.deltaTime / totalTimeLimit * .25f);
                 smokeMaterial.color = c;
@@ -81,6 +81,7 @@ public class GameTimer : MonoBehaviour {
             ghostScript.invisSpeed += 2;
             cameraShakeAnimator.Play("ShakeSmall");
             source.PlayOneShot(rumbleSmall);
+            foreach(ParticleSystem particleRumble in rumbleParticlesSmall) particleRumble.Play();
         }
         else if(totalTimeLimit == stageTwo && allowedToTimer) {
             StartCoroutine(SpawnFlames(diff, diff * 2));
@@ -88,6 +89,7 @@ public class GameTimer : MonoBehaviour {
             ghostScript.invisSpeed += 2;
             cameraShakeAnimator.Play("ShakeMedium");
             source.PlayOneShot(rumbleMedium);
+            foreach(ParticleSystem particleRumble in rumbleParticlesMedium) particleRumble.Play();
         }
         else if(totalTimeLimit == stageThree && allowedToTimer) {
             StartCoroutine(SpawnFlames(diff * 2, diff * 3 + 1));
@@ -95,11 +97,12 @@ public class GameTimer : MonoBehaviour {
             ghostScript.invisSpeed += 3;
             cameraShakeAnimator.Play("ShakeLarge");
             source.PlayOneShot(rumbleLarge);
+            foreach(ParticleSystem particleRumble in rumbleParticlesLarge) particleRumble.Play();
         }
 
         if(totalTimeLimit <= 0 && allowedToTimer) {
             // Death?
-            deathScript.Jumpscare();
+            deathScript.Jumpscare(true);
             // Can also set ghost to a new mode, where it perma hunts player.
         }
         else if(allowedToTimer) {

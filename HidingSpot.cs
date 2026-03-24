@@ -91,7 +91,7 @@ public class HidingSpot : MonoBehaviour {
         if(scareOnExit) {
             gameObject.layer = 0;
             yield return new WaitForSeconds(.5f);
-            GameObject.Find("Game Manager").GetComponent<Death>().Jumpscare();
+            GameObject.Find("Game Manager").GetComponent<Death>().Jumpscare(false);
         }
 
     }

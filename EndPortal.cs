@@ -70,7 +70,7 @@ public class EndPortal : MonoBehaviour {
             sceneLoaderScene.LoadScene(3);
         }
         else {
-            deathScript.Jumpscare();
+            deathScript.Jumpscare(false);
         }
     }
 }

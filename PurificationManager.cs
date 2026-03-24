@@ -47,7 +47,7 @@ public class PurificationManager : MonoBehaviour {
         cursedObjectScript.purificationParticles.Play();
 
         yield return new WaitForSeconds(ritualTimer);
-        if(allowedToTimer) GetComponent<Death>().Jumpscare();
+        if(allowedToTimer) GetComponent<Death>().Jumpscare(false);
     }
 
     public void KillTimer() {

@@ -4,7 +4,7 @@ using UnityEngine;
 
 public class DeathTrigger : MonoBehaviour {
 
-    public bool touchTrigger = false;
+    public bool touchTrigger = false, angelDeath = false;
     public Death deathScript;
 
     [SerializeField]
@@ -12,7 +12,7 @@ public class DeathTrigger : MonoBehaviour {
 
     private void OnTriggerEnter(Collider other) {
         if(other.name == "Player" && touchTrigger && !triggered) {
-            deathScript.Jumpscare();
+            deathScript.Jumpscare(angelDeath);
             triggered = true;
         }    
     }

@@ -6,7 +6,7 @@ using UnityEngine.Audio;
 
 public class Death : MonoBehaviour {
 
-    public GameObject player, jumpscareObject, cameraParent, realGhost, jumpscareChildObject, deathUI, handObjectParent;
+    public GameObject player, jumpscareObject, cameraParent, realGhost, jumpscareChildObject, jumpscareAngel, deathUI, handObjectParent;
     public AudioSource source;
     public AudioClip jumpscareClip, hitDamageClip;
     public AudioClip[] stingerClips;
@@ -22,11 +22,13 @@ public class Death : MonoBehaviour {
     public SaveDataHandler saveSystem;
     public AudioMixer masterMixer;
 
-    public void Jumpscare() {
+    public void Jumpscare(bool angel) {
         //saveSystem.SetLevel(-1);
         saveSystem.SetMissionData(-1, GetComponent<CurseGameManager>().timeSpent, GetComponent<CurseGameManager>().livesLeft,
             GetComponent<CurseGameManager>().timeSpotted, GetComponent<CurseGameManager>().longestChase, GetComponent<CurseGameManager>().purifyState);
-        StartCoroutine(JumpscareTimer());
+
+        if(!angel) StartCoroutine(JumpscareTimer());
+        else StartCoroutine(JumpscareAngelTimer());
     }
 
     private IEnumerator JumpscareTimer() {
@@ -64,6 +66,36 @@ public class Death : MonoBehaviour {
         realGhostChild.GetComponent<Animator>().speed = 0;
         
         if(GetComponent<PurificationManager>().cursedObjectScript != null) AudioController.FadeOutAudio(this, GetComponent<PurificationManager>().cursedObjectScript.pSourceB, .5f);
+        yield return new WaitForSeconds(1.5f);
+        deathUI.SetActive(true);
+
+        //SceneManager.LoadScene(SceneManager.GetActiveScene().buildIndex);
+    }
+
+    private IEnumerator JumpscareAngelTimer() {
+        masterMixer.SetFloat("MainVolumeParam", -80);
+
+        realGhost.SetActive(false);
+
+        jumpscareChildObject.SetActive(false);
+        player.SetActive(false);
+        jumpscareAngel.SetActive(true);
+        jumpscareObject.SetActive(true);
+
+        source.PlayOneShot(jumpscareClip, 0.4f);
+
+        Cursor.lockState = CursorLockMode.None;
+        GetComponent<PauseGame>().normalUI.SetActive(false);
+        GetComponent<PauseGame>().pausedUI.SetActive(false);
+        GetComponent<GameTimer>().KillTimer();
+        GetComponent<PurificationManager>().KillTimer();
+        GetComponent<ToolController>().masterAllowed = false;
+        GetComponent<PauseGame>().allowedToPause = false;
+        //wait for 1 (?) seconds, then pause the game. Load a menu that's animated without using timescale. What to do about the pause menu functionality?
+        yield return new WaitForSeconds(1.13333f);
+        realGhostChild.GetComponent<Animator>().speed = 0;
+
+        if(GetComponent<PurificationManager>().cursedObjectScript != null) AudioController.FadeOutAudio(this, GetComponent<PurificationManager>().cursedObjectScript.pSourceB, .5f);
         yield return new WaitForSeconds(2.5f);
         deathUI.SetActive(true);
 
@@ -88,7 +120,7 @@ public class Death : MonoBehaviour {
             heartsUI[lives - 1].GetComponent<Animator>().Play("HeartIconLoss");
             GetComponent<CurseGameManager>().livesLeft = 0;
             source.PlayOneShot(stingerClips[3 - lives]);
-            if(allowDeath) Jumpscare();
+            if(allowDeath) Jumpscare(false);
             else {
                 yield return new WaitForSeconds(1f);
                 bloodUI[3 - lives].SetActive(false);
