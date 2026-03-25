@@ -10,11 +10,14 @@ public class FlipbookAnimator : MonoBehaviour {
     [SerializeField, Range(0, 20)] private float delay = 0f;
 
     private Image imageReference;
+    private SpriteRenderer spriteReference;
     public Sprite[] spriteList;
     private int spriteIndex = 0;
 
     private void OnEnable() {
-        imageReference = GetComponent<Image>();
+        if(GetComponent<Image>()) imageReference = GetComponent<Image>();
+        else spriteReference = GetComponent<SpriteRenderer>();
+
         if(onEnable) {
             InvokeRepeating("FlipbookCycle", delay, intervalSpeed);
         }
@@ -22,7 +25,8 @@ public class FlipbookAnimator : MonoBehaviour {
     }
 
     private void FlipbookCycle() {
-        imageReference.sprite = spriteList[spriteIndex];
+        if(imageReference != null) imageReference.sprite = spriteList[spriteIndex];
+        else spriteReference.sprite = spriteList[spriteIndex];
         spriteIndex++;
         if(spriteIndex == spriteList.Length && looping) spriteIndex = 0;
         else if(spriteIndex == spriteList.Length) CancelInvoke();

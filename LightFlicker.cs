@@ -18,7 +18,7 @@ public class LightFlicker : MonoBehaviour {
     public int maxSecAwake = 30;
     public int minSecDead = 3;
     public int maxSecDead = 15;
-    private bool flickeringActive = false;
+    private bool flickeringActive = false, stored = false;
 
     // Used to forcefully interrupt flickering routines and make light only turn On or Off.
     private bool forceChange = false;
@@ -27,14 +27,19 @@ public class LightFlicker : MonoBehaviour {
     [SerializeField] private Material aliveBulbMat;
     public MeshRenderer bulbRenderer;
     public AudioSource buzzingSource, flickeringSource, interactSource;
-    public AudioClip turnOnSound, turnOffSound;
+    public AudioClip turnOnSound, turnOffSound, blowUpSound;
 
+    [SerializeField] ParticleSystem blowUpParticles;
     public bool alive = true;
 
     public void OnEnable() {
         if(source == null) source = GetComponent<Light>();
 
-        defaultIntensity = source.intensity;
+        if(!stored) {
+            defaultIntensity = source.intensity;
+            stored = true;
+        }
+        source.intensity = defaultIntensity;
         maximumBoost = defaultIntensity;
 
         if(makesNoise) buzzingSource.Play();
@@ -141,6 +146,22 @@ public class LightFlicker : MonoBehaviour {
         else StartCoroutine(KillLight());
         interactSource.PlayOneShot(turnOffSound);
     }
+
+    /*
+     * Public method used for remotely turning off the light.
+     * Bypasses any protocol for the flicker cycle.
+     */
+    public void BlowUpLight() {
+        alive = false;
+        forceChange = true;
+
+        StartCoroutine(KillLight());
+        interactSource.PlayOneShot(blowUpSound);
+        blowUpParticles.Play();
+
+        gameObject.tag = "Generic";
+    }
+
 
     /*
      * Public method used for remotely turning on the light.

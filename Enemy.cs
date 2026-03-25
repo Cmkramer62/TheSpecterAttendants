@@ -7,7 +7,7 @@ public class Enemy : MonoBehaviour {
 
     public LayerMask groundLayer, playerLayer;
     public float health, walkPointMin, walkPointRange, timeBetweenAttacks, attackRange, walkSpeed, runSpeed, invisSpeed, chaseMeter = 100f, rotationSpeed = 5f;
-    [SerializeField] private int damage, invisibilityOdds = 3, pauseChance = 4, deAggroCooldown = 10, eventCharge = 0;
+    [SerializeField] private int damage, invisibilityOdds = 3, pauseChance = 4, deAggroCooldown = 10, aggressionCharges = 0;
     public ParticleSystem hitEffect;
     public bool invisible = false, freezingAura = false, attractedToSound = false, allowedToMove = true, geistAura = false;
     public SkinnedMeshRenderer[] meshRenderers;
@@ -66,8 +66,8 @@ public class Enemy : MonoBehaviour {
                     if(currentMode == Mode.chasing) {
                         AudioController.FadeToAnother(this, musicSource, 4, normalMusicClip, .1f);
                         walkPointSet = false;
-                        eventCharge--;
-                        if(eventCharge < 0) eventCharge = 0;
+                        aggressionCharges--;
+                        if(aggressionCharges < 0) aggressionCharges = 0;
                         Debug.Log("Lowering from escaping a chase.");
                     }
                     ModePatrolling();
@@ -242,7 +242,7 @@ public class Enemy : MonoBehaviour {
                     InvertVisibility();
                 }*/
                 // INVIS -> VISI.... If It's not the purification, AND we're invis, AND the eventCharges are greater than 0, AND we're not close to the player
-                if(!GetComponent<ConeLOSDetector>().visibilityOverride && invisible && eventCharge > 0 && Vector3.Distance(playerTransform.position, cachedTransform.position) > walkPointRange * 0.5f) {
+                if(!GetComponent<ConeLOSDetector>().visibilityOverride && invisible && aggressionCharges > 0 && Vector3.Distance(playerTransform.position, cachedTransform.position) > walkPointRange * 0.5f) {
                     //eventCharge--;
                     //if(eventCharge < 0) eventCharge = 0;
                     //Debug.Log("lowering from going Visible.");
@@ -253,7 +253,7 @@ public class Enemy : MonoBehaviour {
                     }
                 }
                 // VISI -> INVIS
-                else if(!invisible && !GetComponent<ConeLOSDetector>().visibilityOverride && eventCharge <= 0) {
+                else if(!invisible && !GetComponent<ConeLOSDetector>().visibilityOverride && aggressionCharges <= 0) {
                     InvertVisibility();
                 }
                 // else only go VISI -> INVIS when hitting a player
@@ -307,7 +307,7 @@ public class Enemy : MonoBehaviour {
     }
 
     public void IncreaseCharges() {
-        eventCharge++;
+        aggressionCharges++;
     }
 
     public void InvertVisibility() {
@@ -385,8 +385,8 @@ public class Enemy : MonoBehaviour {
                 deathScript.LoseLife();
             }
             //InvertVisibility();
-            eventCharge--;
-            if(eventCharge < 0) eventCharge = 0;
+            aggressionCharges--;
+            if(aggressionCharges < 0) aggressionCharges = 0;
             Debug.Log("lowering from attacking a player.");
         }
 

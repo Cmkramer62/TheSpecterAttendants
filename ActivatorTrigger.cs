@@ -15,14 +15,32 @@ public class ActivatorTrigger : MonoBehaviour {
     }
 
     private void OnTriggerEnter(Collider other) {
+
         if(other.name == "Ghost Enemy" && activatorScript != null && activatorScript.state && other.GetComponent<Enemy>().invisible) {
             activatorScript.Activate();
-            if(CheckIfPlayerInRange()) other.GetComponent<Enemy>().IncreaseCharges();
+            if(CheckIfPlayerInRange() && !other.GetComponentInChildren<ParanormalNoises>().IsPlayingParanormal()) {
+                other.GetComponent<Enemy>().IncreaseCharges();
+                other.GetComponentInChildren<ParanormalNoises>().StartCooldown();
+            }
         }
         else if(other.name == "Ghost Enemy" && lightScriptDirect != null && lightScriptDirect.alive && other.GetComponent<Enemy>().invisible) {
-            lightScriptDirect.TurnOffLight(false);
-            if(CheckIfPlayerInRange()) other.GetComponent<Enemy>().IncreaseCharges();
+            
+            if(CheckIfPlayerInRange() && !other.GetComponentInChildren<ParanormalNoises>().IsPlayingParanormal()) {
+                other.GetComponent<Enemy>().IncreaseCharges();
+                other.GetComponentInChildren<ParanormalNoises>().StartCooldown();
+                if(other.GetComponent<Enemy>().invisSpeed >= 7) {
+                    lightScriptDirect.BlowUpLight();
+                }
+                else {
+                    lightScriptDirect.TurnOffLight(false);
+                }
+            }
+            else {
+                lightScriptDirect.TurnOffLight(false);
+            }
         }
+
+        
     }
 
 

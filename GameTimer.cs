@@ -81,7 +81,10 @@ public class GameTimer : MonoBehaviour {
             ghostScript.invisSpeed += 2;
             cameraShakeAnimator.Play("ShakeSmall");
             source.PlayOneShot(rumbleSmall);
-            foreach(ParticleSystem particleRumble in rumbleParticlesSmall) particleRumble.Play();
+            foreach(ParticleSystem particleRumble in rumbleParticlesSmall) {
+                yield return new WaitForSeconds(.3f);
+                particleRumble.Play();
+            }
         }
         else if(totalTimeLimit == stageTwo && allowedToTimer) {
             StartCoroutine(SpawnFlames(diff, diff * 2));
@@ -89,7 +92,11 @@ public class GameTimer : MonoBehaviour {
             ghostScript.invisSpeed += 2;
             cameraShakeAnimator.Play("ShakeMedium");
             source.PlayOneShot(rumbleMedium);
-            foreach(ParticleSystem particleRumble in rumbleParticlesMedium) particleRumble.Play();
+            foreach(ParticleSystem particleRumble in rumbleParticlesMedium) {
+                yield return new WaitForSeconds(.3f);
+                particleRumble.Play();
+            }
+            foreach(ParticleSystem particleRumble in rumbleParticlesSmall) particleRumble.gameObject.SetActive(false);
         }
         else if(totalTimeLimit == stageThree && allowedToTimer) {
             StartCoroutine(SpawnFlames(diff * 2, diff * 3 + 1));
@@ -97,7 +104,12 @@ public class GameTimer : MonoBehaviour {
             ghostScript.invisSpeed += 3;
             cameraShakeAnimator.Play("ShakeLarge");
             source.PlayOneShot(rumbleLarge);
-            foreach(ParticleSystem particleRumble in rumbleParticlesLarge) particleRumble.Play();
+            foreach(ParticleSystem particleRumble in rumbleParticlesLarge) {
+                yield return new WaitForSeconds(.3f);
+                particleRumble.Play();
+            }
+            foreach(ParticleSystem particleRumble in rumbleParticlesSmall) particleRumble.gameObject.SetActive(false);
+            foreach(ParticleSystem particleRumble in rumbleParticlesMedium) particleRumble.gameObject.SetActive(false);
         }
 
         if(totalTimeLimit <= 0 && allowedToTimer) {

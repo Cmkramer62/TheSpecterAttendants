@@ -20,7 +20,7 @@ public class ActivatorSwitch : MonoBehaviour {
         routine = StartCoroutine(ActivationTimer());
 
         state = !state;
-        GetComponent<Animator>().SetBool("State", state);
+        if(GetComponent<Animator>()) GetComponent<Animator>().SetBool("State", state);
         source.PlayOneShot(clip);
     }
 

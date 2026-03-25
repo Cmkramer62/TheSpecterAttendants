@@ -14,6 +14,7 @@ public class ParanormalNoises : MonoBehaviour {
     [SerializeField] private float minRandomDelay = 0f, maxRandomDelay = 8f;
     [SerializeField, Range(1, 5), Tooltip("Random(0, lateOdds): 1=alwaysLate, 2=1/2, 3=1/3")] private int lateOdds = 3;
     [SerializeField] private LightFlicker lanternScript;
+    public bool onCooldown = false;
 
     private Enemy ghostScript;
     private AudioClip lastPlayedClip;
@@ -24,9 +25,17 @@ public class ParanormalNoises : MonoBehaviour {
     }
 
     private void OnTriggerEnter(Collider other) {
-        if(other.CompareTag("Player") && !spatialSource.isPlaying) {
+        if(other.CompareTag("Player") && !spatialSource.isPlaying && !onCooldown) {
             PlayRandomNoise(true);
+            Debug.Log("Saw you");
         }
+        else {
+            Debug.Log("Failed: " + other.name + " " + !spatialSource.isPlaying + " " + !onCooldown);
+        }
+    }
+
+    public bool IsPlayingParanormal() {
+        return spatialSource.isPlaying;
     }
 
     // Can make this public and have something distant cause all players to hear this.
@@ -65,5 +74,16 @@ public class ParanormalNoises : MonoBehaviour {
         AudioClip randClip = listOfClips[Random.Range(0, listOfClips.Length)];
         if(lastPlayedClip == null || randClip != lastPlayedClip) return randClip;
         else return FindRandomClip(listOfClips);
+    }
+
+    // Because the ghost ran into a light, and turned it off.
+    public void StartCooldown() {
+        StartCoroutine(CooldownTimer());
+    }
+
+    private IEnumerator CooldownTimer() {
+        onCooldown = true;
+        yield return new WaitForSeconds(5f);
+        onCooldown = false;
     }
 }
