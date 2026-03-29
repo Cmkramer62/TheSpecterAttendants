@@ -52,7 +52,7 @@ public class InteractRaycast : MonoBehaviour {
                         hit.transform.GetComponent<TakebleObject>().Take();
                         break;
                     case "HidingSpot":
-                        hit.transform.GetComponent<HidingSpot>().Hide(gameObject.transform.parent.parent.gameObject);
+                        if(!hit.transform.GetComponent<HidingSpot>().hidingAnimOnCooldown) hit.transform.GetComponent<HidingSpot>().Hide(gameObject.transform.parent.parent.gameObject);
                         break;
                     case "Candle":
                         hit.transform.GetComponent<Candle>().InteractWithCandle();

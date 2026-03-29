@@ -17,15 +17,18 @@ public class HidingSpot : MonoBehaviour {
     private Animator fadeAnimator;
     private int storedItem = 0;
 
+    [HideInInspector] public bool hidingAnimOnCooldown = false;
+
     // Update is called once per frame
     void Update() {
-        if(hidingHere && Input.GetKeyDown(KeyCode.E)) {
+        if(!hidingAnimOnCooldown && hidingHere && Input.GetKeyDown(KeyCode.E)) {
             Unhide();
         }
     }
 
     #region Hiding methods
     public void Hide(GameObject thisPlayer) {
+        hidingAnimOnCooldown = true;
         if(fadeAnimator == null) fadeAnimator = GameObject.Find("Fade Animation").GetComponent<Animator>();
         fadeAnimator.Play("Fade to Black");
         GetComponent<AudioSource>().PlayOneShot(enterClip);
@@ -52,9 +55,11 @@ public class HidingSpot : MonoBehaviour {
         player.transform.position = positionHide.position;
         player.transform.rotation = positionHide.rotation;
         if(GetComponent<Animator>()) GetComponent<Animator>().Play("LockerClose");
+        hidingAnimOnCooldown = false;
     }
 
     public void Unhide() {
+        hidingAnimOnCooldown = true;
         GetComponent<AudioSource>().PlayOneShot(exitClip);
         fadeAnimator.Play("Fade to Black");
         if(GetComponent<Animator>()) GetComponent<Animator>().Play("LockerOpen");
@@ -84,7 +89,7 @@ public class HidingSpot : MonoBehaviour {
             yield return new WaitForSeconds(.5f);
             GameObject.Find("Game Manager").GetComponent<Death>().Jumpscare(false);
         }
-
+        hidingAnimOnCooldown = false;
     }
     #endregion
 
