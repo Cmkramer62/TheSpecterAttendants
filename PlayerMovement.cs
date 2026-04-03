@@ -6,7 +6,7 @@ using UnityEngine.Audio;
 using TMPro;
 using Unity.Netcode;
 
-public class PlayerMovement : MonoBehaviour {
+public class PlayerMovement : NetworkBehaviour {
     
     public GroundChecker groundCheckerScript;
 
@@ -45,21 +45,13 @@ public class PlayerMovement : MonoBehaviour {
 
     private void Awake() {
 
-        if(!playerHandlerScript.IsOwner) {
-            enabled = false;
-            return;
-        }
-
         //sprintRemaining = sprintDuration;
         cachedTransform = GetComponent<Transform>();
         originalScale = cachedTransform.localScale;
     }
 
     private void Start() {
-        if(!playerHandlerScript.IsOwner) {
-            enabled = false;
-            return;
-        }
+
         originalSpeed = speed;
         crouchingSpeed = speed / 2;
         if(lockCursor) {
@@ -96,7 +88,7 @@ public class PlayerMovement : MonoBehaviour {
     }
 
     void Update() {
-        if(!playerHandlerScript.IsOwner) {
+        if(!IsOwner) {
             enabled = false;
             return;
         }

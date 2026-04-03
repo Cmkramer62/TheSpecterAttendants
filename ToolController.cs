@@ -1,8 +1,9 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using Unity.Netcode;
 
-public class ToolController : MonoBehaviour {
+public class ToolController : NetworkBehaviour {
 
     public bool cycleCooldown = false, masterAllowed = true;
     public bool allowedToCycle = true;
@@ -23,8 +24,7 @@ public class ToolController : MonoBehaviour {
     [SerializeField] private PlayerHandler playerHandlerScript;
 
     private void Start() {
-        if(!playerHandlerScript.IsOwner) {
-            enabled = false;
+        if(!IsServer) {
             return;
         }
 
@@ -35,21 +35,20 @@ public class ToolController : MonoBehaviour {
 
     // Update is called once per frame
     void Update() {
-        if(!playerHandlerScript.IsOwner) {
-            enabled = false;
+        if(!IsOwner) {
             return;
         }
 
-        if(!cycleCooldown && masterAllowed && allowedToCycle && Input.GetAxis("Mouse ScrollWheel") > 0f) CycleDown();
-        else if(!cycleCooldown && masterAllowed && allowedToCycle && Input.GetAxis("Mouse ScrollWheel") < 0f) CycleUp();
-        else if(!cycleCooldown && masterAllowed && allowedToCycle && Input.GetKeyDown(KeyCode.Alpha1)) CycleTo(0);
-        else if(!cycleCooldown && masterAllowed && allowedToCycle && Input.GetKeyDown(KeyCode.Alpha2)) CycleTo(1);
-        else if(!cycleCooldown && masterAllowed && allowedToCycle && Input.GetKeyDown(KeyCode.Alpha3)) CycleTo(2);
-        else if(!cycleCooldown && masterAllowed && allowedToCycle && Input.GetKeyDown(KeyCode.Alpha4)) CycleTo(3);
-        else if(!cycleCooldown && masterAllowed && allowedToCycle && Input.GetKeyDown(KeyCode.Alpha5)) CycleTo(4);
-        else if(!cycleCooldown && masterAllowed && allowedToCycle && Input.GetKeyDown(KeyCode.Alpha6)) CycleTo(5);
-        else if(!cycleCooldown && masterAllowed && allowedToCycle && Input.GetKeyDown(KeyCode.Alpha7)) CycleTo(6);
-        else if(!cycleCooldown && masterAllowed && allowedToCycle && Input.GetKeyDown(KeyCode.Alpha8)) CycleTo(7);
+        if(!cycleCooldown && masterAllowed && allowedToCycle && Input.GetAxis("Mouse ScrollWheel") > 0f) CycleDownServerRpc();
+        else if(!cycleCooldown && masterAllowed && allowedToCycle && Input.GetAxis("Mouse ScrollWheel") < 0f) CycleUpServerRpc();
+        else if(!cycleCooldown && masterAllowed && allowedToCycle && Input.GetKeyDown(KeyCode.Alpha1)) CycleToServerRpc(0);
+        else if(!cycleCooldown && masterAllowed && allowedToCycle && Input.GetKeyDown(KeyCode.Alpha2)) CycleToServerRpc(1);
+        else if(!cycleCooldown && masterAllowed && allowedToCycle && Input.GetKeyDown(KeyCode.Alpha3)) CycleToServerRpc(2);
+        else if(!cycleCooldown && masterAllowed && allowedToCycle && Input.GetKeyDown(KeyCode.Alpha4)) CycleToServerRpc(3);
+        else if(!cycleCooldown && masterAllowed && allowedToCycle && Input.GetKeyDown(KeyCode.Alpha5)) CycleToServerRpc(4);
+        else if(!cycleCooldown && masterAllowed && allowedToCycle && Input.GetKeyDown(KeyCode.Alpha6)) CycleToServerRpc(5);
+        else if(!cycleCooldown && masterAllowed && allowedToCycle && Input.GetKeyDown(KeyCode.Alpha7)) CycleToServerRpc(6);
+        else if(!cycleCooldown && masterAllowed && allowedToCycle && Input.GetKeyDown(KeyCode.Alpha8)) CycleToServerRpc(7);
 
         geistLightScript.GeistLightUIUpdate();
         cameraScript.CameraUIUpdate();
@@ -57,7 +56,8 @@ public class ToolController : MonoBehaviour {
     }
 
     #region Hand Toolbelt Functions
-    public void CycleUp() {
+    [ServerRpc]
+    public void CycleUpServerRpc() {
         if(playerItemMeshes[3].activeSelf) playerItemMeshes[3].GetComponent<Scanner>().allowedToScan = false;
         if(playerItemMeshes[5].activeSelf) playerItemMeshes[5].GetComponent<Thermometer>().allowedToScan = false;
         source.PlayOneShot(swapClip);
@@ -79,7 +79,8 @@ public class ToolController : MonoBehaviour {
         }
     }
 
-    public void CycleDown() {
+    [ServerRpc]
+    public void CycleDownServerRpc() {
         if(playerItemMeshes[3].activeSelf) playerItemMeshes[3].GetComponent<Scanner>().allowedToScan = false;
         if(playerItemMeshes[5].activeSelf) playerItemMeshes[5].GetComponent<Thermometer>().allowedToScan = false;
         source.PlayOneShot(swapClip);
@@ -103,7 +104,8 @@ public class ToolController : MonoBehaviour {
         }
     }
 
-    public void CycleTo(int to) {
+    [ServerRpc]
+    public void CycleToServerRpc(int to) {
         if(heldIndex == to) return;
 
         if(playerItemMeshes[3].activeSelf) playerItemMeshes[3].GetComponent<Scanner>().allowedToScan = false;
@@ -130,13 +132,13 @@ public class ToolController : MonoBehaviour {
     }
 
     public void ForceToBarehand() {
-        CycleTo(0);
+        CycleToServerRpc(0);
         allowedToCycle = false;
     }
 
     public void ForceToPrevhand(int index) {
         allowedToCycle = true;
-        CycleTo(index);
+        CycleToServerRpc(index);
     }
 
     private IEnumerator ToolbeltCooldown() {
