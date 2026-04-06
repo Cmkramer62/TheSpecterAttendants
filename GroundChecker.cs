@@ -42,7 +42,7 @@ public class GroundChecker : MonoBehaviour {
         RaycastHit hit;
         bool priorState = isGrounded;
         isGrounded = Physics.Raycast(groundCheck.position, Vector3.down, out hit, groundDistance, groundMask);
-        playerAnimator.SetBool("IsGrounded", isGrounded); 
+        playerAnimator.SetBool("Grounded", isGrounded); 
         if(!priorState && isGrounded) {
             currentTag = hit.collider.tag;
 

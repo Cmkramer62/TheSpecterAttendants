@@ -12,9 +12,10 @@ public class PlayerMovement : NetworkBehaviour {
 
     public float speed = 12f, staminaRecoveryRate = 1f, staminaDuration = 40f;
 
-    
 
-    private float originalSpeed, crouchingSpeed, sprintActualMultiplier = 1f, gravity = -22f, jumpHeight = 1, sprintMultiplier = 3f, crouchHeight = 0.75f, currentHeight = .75f;
+
+    private float originalSpeed, crouchingSpeed, sprintActualMultiplier = 1f, gravity = -22f, jumpHeight = 1, sprintMultiplier = 3f;
+    public float crouchHeight = -0.696f, currentHeight = 0f;
 
     [SerializeField]
     private bool shouldBeSlowed = false, isTired = false;
@@ -28,7 +29,7 @@ public class PlayerMovement : NetworkBehaviour {
     public LayerMask groundMask;
     public KeyCode crouchKey = KeyCode.LeftControl;
 
-
+    [SerializeField] Animator playerAnimator;
 
     public ConeLOSDetector enemyVisionScript;
     #region SOUND VARIABLES
@@ -39,15 +40,17 @@ public class PlayerMovement : NetworkBehaviour {
 
     public LightFlicker lanternReference;
 
-    private Vector3 fallingVelocity, originalScale;
+    private Vector3 fallingVelocity, originalScale, originalHeadHeight;
     private Transform cachedTransform;
     [SerializeField] private PlayerHandler playerHandlerScript;
+    [SerializeField] private Transform headTransform;
 
     private void Awake() {
 
         //sprintRemaining = sprintDuration;
         cachedTransform = GetComponent<Transform>();
         originalScale = cachedTransform.localScale;
+        originalHeadHeight = headTransform.localPosition;
     }
 
     private void Start() {
@@ -69,7 +72,7 @@ public class PlayerMovement : NetworkBehaviour {
     public void Crouch() {
         source.PlayOneShot(crouchClip);
         speed = isCrouched ? originalSpeed : crouchingSpeed;
-        currentHeight = isCrouched ? crouchHeight : originalScale.y;
+        currentHeight = isCrouched ? crouchHeight : originalHeadHeight.y;
         //enemyVisionScript.fieldOfViewAngle += isCrouched ? 30 : -30;
         isCrouched = !isCrouched;
     }
@@ -77,6 +80,8 @@ public class PlayerMovement : NetworkBehaviour {
     private void Jump() {
         fallingVelocity.y = Mathf.Sqrt(jumpHeight * -2f * gravity);
         source.PlayOneShot(jumpClip[Random.Range(0, jumpClip.Length)]);
+
+        playerAnimator.SetTrigger("Jump");
     }
 
     public bool TiredState() {
@@ -93,14 +98,27 @@ public class PlayerMovement : NetworkBehaviour {
             return;
         }
         // MOVEMENT Section
-        Vector3 inputVector = cachedTransform.right * Input.GetAxis("Horizontal") + cachedTransform.forward * Input.GetAxis("Vertical");
-        if(inputVector.magnitude > 1)
+        var horiz = Input.GetAxis("Horizontal");
+        var vert = Input.GetAxis("Vertical");
+        Vector3 inputVector = cachedTransform.right * horiz + cachedTransform.forward * vert;
+        
+        playerAnimator.SetFloat("Vertical", vert);
+        playerAnimator.SetFloat("Horizontal", horiz);
+
+        // Debug.Log(Input.GetAxis("Horizontal") + " = " + Input.GetAxis("Vertical"));
+
+
+        if(inputVector.magnitude > 1) {
             inputVector.Normalize();
+        }
+        playerAnimator.SetBool("Walking", horiz != 0 || vert != 0);
         if(allowedToMove)
             controller.Move(inputVector * sprintActualMultiplier * speed * Time.deltaTime);
 
+
         // CROUCH Section
-        cachedTransform.localScale = new Vector3(originalScale.x, Mathf.Clamp(currentHeight -= (isCrouched ? 2f : -2f) * Time.deltaTime, crouchHeight, originalScale.y), originalScale.z);
+        //cachedTransform.localScale = new Vector3(originalScale.x, Mathf.Clamp(currentHeight -= (isCrouched ? 2f : -2f) * Time.deltaTime, crouchHeight, originalScale.y), originalScale.z);
+        headTransform.localPosition = new Vector3(originalHeadHeight.x, Mathf.Clamp(currentHeight -= (isCrouched ? 2f : -2f) * Time.deltaTime, crouchHeight, originalHeadHeight.y), originalHeadHeight.z);
 
         if(allowedToCrouch && allowedToMove && (Input.GetKeyDown(crouchKey) || Input.GetKeyUp(crouchKey))) {
             isCrouched = !Input.GetKeyDown(crouchKey);
@@ -165,7 +183,9 @@ public class PlayerMovement : NetworkBehaviour {
             isSprinting = false;
             sprintActualMultiplier = 1;
         }
-        
+
+        playerAnimator.SetBool("Crouching", isCrouched);
+
     }
 
 
