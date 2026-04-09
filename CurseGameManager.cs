@@ -68,9 +68,6 @@ public class CurseGameManager : MonoBehaviour {
     }
 
     public void ApplyCursedEnvironment() {
-        //foreach(var goalCurseSpecific in goalCurse.GetComponentInChildren<CursedObject>().cursesList) {
-
-        //}
         var goalCurseSpecific = goalCurse.GetComponentInChildren<CursedObject>().cursesList[1];
         
         enviroParticles[0].SetActive(goalCurseSpecific == CursedObject.CursedTypes.Glowing);
@@ -80,7 +77,6 @@ public class CurseGameManager : MonoBehaviour {
         enviroParticles[4].SetActive(goalCurseSpecific == CursedObject.CursedTypes.Unholy);
 
         if(goalCurseSpecific == CursedObject.CursedTypes.Sound) bellScript.ghostSearchWithSound = true;
-
     }
     
     public void ApplyCursedAura() {
@@ -121,8 +117,4 @@ public class CurseGameManager : MonoBehaviour {
         }
     }
 
-    // Update is called once per frame
-    void Update() {
-
-    }
 }

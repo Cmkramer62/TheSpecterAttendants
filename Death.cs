@@ -56,7 +56,7 @@ public class Death : MonoBehaviour {
         Cursor.lockState = CursorLockMode.None;
         GetComponent<PauseGame>().normalUI.SetActive(false);
         GetComponent<PauseGame>().pausedUI.SetActive(false);
-        GetComponent<GameTimer>().KillTimer();
+        //GetComponent<GameTimer>().KillTimer();
         GetComponent<PurificationManager>().KillTimer();
         GetComponent<ToolController>().masterAllowed = false;
         GetComponent<PauseGame>().allowedToPause = false;
@@ -85,7 +85,7 @@ public class Death : MonoBehaviour {
         Cursor.lockState = CursorLockMode.None;
         GetComponent<PauseGame>().normalUI.SetActive(false);
         GetComponent<PauseGame>().pausedUI.SetActive(false);
-        GetComponent<GameTimer>().KillTimer();
+        //GetComponent<GameTimer>().KillTimer();
         GetComponent<PurificationManager>().KillTimer();
         GetComponent<ToolController>().masterAllowed = false;
         GetComponent<PauseGame>().allowedToPause = false;
