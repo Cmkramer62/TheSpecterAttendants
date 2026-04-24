@@ -21,7 +21,7 @@ public class CurseGameManager : NetworkBehaviour {
     //public GameObject[] ghostHorns;
     public Bell bellScript;
 
-    public GameObject[] enviroParticles;
+    //public GameObject[] enviroParticles;
     //public GhostRandomizer ghostRandomizer;
 
     public int timeSpent = 0, livesLeft = 3, timeSpotted = 0, longestChase = 0, purifyState = 0;
@@ -80,11 +80,11 @@ public class CurseGameManager : NetworkBehaviour {
     private void ApplyCursedEnvironment() {
         var goalCurseSpecific = goalCurse.GetComponentInChildren<CursedObject>().cursesList[1];
         
-        enviroParticles[0].SetActive(goalCurseSpecific == CursedObject.CursedTypes.Glowing);
-        enviroParticles[1].SetActive(goalCurseSpecific == CursedObject.CursedTypes.EMF);
-        enviroParticles[2].SetActive(goalCurseSpecific == CursedObject.CursedTypes.Aura);
-        enviroParticles[3].SetActive(goalCurseSpecific == CursedObject.CursedTypes.Thermo);
-        enviroParticles[4].SetActive(goalCurseSpecific == CursedObject.CursedTypes.Unholy);
+        //enviroParticles[0].SetActive(goalCurseSpecific == CursedObject.CursedTypes.Glowing);
+        ///enviroParticles[1].SetActive(goalCurseSpecific == CursedObject.CursedTypes.EMF);
+        //enviroParticles[2].SetActive(goalCurseSpecific == CursedObject.CursedTypes.Aura);
+        //enviroParticles[3].SetActive(goalCurseSpecific == CursedObject.CursedTypes.Thermo);
+        //enviroParticles[4].SetActive(goalCurseSpecific == CursedObject.CursedTypes.Unholy);
 
         //if(goalCurseSpecific == CursedObject.CursedTypes.Sound) bellScript.ghostSearchWithSound = true;
     }
