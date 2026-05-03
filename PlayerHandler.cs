@@ -27,7 +27,7 @@ public class PlayerHandler : NetworkBehaviour {
         cam.SetTarget(cameraHolder);
         cam.GetComponent<PingCreator>().playerScript = playerMovementScript;
         cam.transform.GetChild(3).GetComponent<HeadBob>().playerMovement = playerMovementScript;
-        cam.GetComponent<MouseLook>().playerBody = playerMovementScript.transform;
+        cam.GetComponent<MouseLook>().playerBody = playerMovementScript.transform.parent;
         cam.GetComponent<MouseLook>().cameraAnimator = animatorRef;
 
         if(ghostScript != null) {

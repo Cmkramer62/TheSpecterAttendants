@@ -6,7 +6,7 @@ public class GroundChecker : MonoBehaviour {
     public Transform groundCheck;
     public float groundDistance = 0.4f, footstepVolume;
     public LayerMask groundMask;
-    public bool isGrounded = false;
+    public bool isGrounded = false, inAirFromJump = false;
 
     [SerializeField] private Animator playerAnimator;
 
@@ -49,12 +49,12 @@ public class GroundChecker : MonoBehaviour {
            // Debug.Log("Landed.");
 
             AudioClip[] playingLandingClips = AssignList(false);
-           // playerAnimator.SetBool("IsJump", false);
-
             footSource.pitch = (Random.Range(0.87f, 0.93f)); //(Random.Range(0.78f, 0.87f));
             AudioClip clip = GetRandomClip(playingLandingClips);
             footSource.PlayOneShot(clip, footstepVolume);
+            playerAnimator.SetBool("InAirFromJump", false);
         }
+
 
         if(isGrounded && !hit.collider.CompareTag(currentTag)) {
             currentTag = hit.collider.tag;

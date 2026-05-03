@@ -26,13 +26,13 @@ public class MouseLook : MonoBehaviour {
 
             transform.localRotation = Quaternion.Euler(xRotation, 0f, 0f);
             // rotate the camera vertically. Pitch only.
-            //playerBody.Rotate(Vector3.up * mouseX); // rotation should be controlled by the anim?
+            playerBody.Rotate(Vector3.up * mouseX); // rotation should be controlled by the anim?
             cameraParent.Rotate(Vector3.up * mouseX);
 
-            float angle = Mathf.DeltaAngle(playerBody.parent.eulerAngles.y, cameraParent.eulerAngles.y);
+            //float angle = Mathf.DeltaAngle(playerBody.parent.eulerAngles.y, cameraParent.eulerAngles.y);
             // Optional: normalize to -1 to 1
             //float normalized = Mathf.Clamp(angle / 90f, -90f, 90f);
-            cameraAnimator.SetFloat("InputAngle", angle);
+            //cameraAnimator.SetFloat("InputAngle", angle);
         }
 
     }

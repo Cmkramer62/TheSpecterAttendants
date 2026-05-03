@@ -10,11 +10,11 @@ public class PlayerMovement : NetworkBehaviour {
     
     public GroundChecker groundCheckerScript;
 
-    public float speed = 12f, staminaRecoveryRate = 1f, staminaDuration = 40f;
+    public float speed = 12f, staminaRecoveryRate = 1f, staminaDuration = 40f, jumpHeight = 1;
 
 
 
-    private float originalSpeed, crouchingSpeed, sprintActualMultiplier = 1f, gravity = -22f, jumpHeight = 1, sprintMultiplier = 3f;
+    private float originalSpeed, crouchingSpeed, sprintActualMultiplier = 1f, gravity = -22f, sprintMultiplier = 3f;
     public float crouchHeight = -0.696f, currentHeight = 0f;
 
     [SerializeField]
@@ -44,11 +44,12 @@ public class PlayerMovement : NetworkBehaviour {
     private Transform cachedTransform;
     [SerializeField] private PlayerHandler playerHandlerScript;
     [SerializeField] private Transform headTransform;
+    private Coroutine airRoutine;
 
     private void Awake() {
 
         //sprintRemaining = sprintDuration;
-        cachedTransform = GetComponent<Transform>();
+        cachedTransform = transform.parent.GetComponent<Transform>();
         originalScale = cachedTransform.localScale;
         originalHeadHeight = headTransform.localPosition;
     }
@@ -70,6 +71,7 @@ public class PlayerMovement : NetworkBehaviour {
     }
 
     public void Crouch() {
+        Debug.Log("Crouch called.");
         source.PlayOneShot(crouchClip);
         speed = isCrouched ? originalSpeed : crouchingSpeed;
         currentHeight = isCrouched ? crouchHeight : originalHeadHeight.y;
@@ -81,7 +83,15 @@ public class PlayerMovement : NetworkBehaviour {
         fallingVelocity.y = Mathf.Sqrt(jumpHeight * -2f * gravity);
         source.PlayOneShot(jumpClip[Random.Range(0, jumpClip.Length)]);
 
-        playerAnimator.SetBool("Jump", true);
+        playerAnimator.SetTrigger("Jump");
+        playerAnimator.SetBool("InAirFromJump", true);
+        if(airRoutine != null) StopCoroutine(airRoutine);
+        airRoutine = StartCoroutine(InAirFromJumpTimer());
+    }
+
+    private IEnumerator InAirFromJumpTimer() {
+        yield return new WaitForSeconds(1f);
+        playerAnimator.SetBool("InAirFromJump", false);
     }
 
     public bool TiredState() {
@@ -128,7 +138,7 @@ public class PlayerMovement : NetworkBehaviour {
 
 
         // CROUCH Section
-        cachedTransform.localScale = new Vector3(originalScale.x, Mathf.Clamp(currentHeight -= (isCrouched ? 2f : -2f) * Time.deltaTime, crouchHeight, originalScale.y), originalScale.z);
+        //cachedTransform.localScale = new Vector3(originalScale.x, Mathf.Clamp(currentHeight -= (isCrouched ? 2f : -2f) * Time.deltaTime, crouchHeight, originalScale.y), originalScale.z);
         headTransform.localPosition = new Vector3(originalHeadHeight.x, Mathf.Clamp(currentHeight -= (isCrouched ? 2f : -2f) * Time.deltaTime, crouchHeight, originalHeadHeight.y), originalHeadHeight.z);
 
         if(allowedToCrouch && allowedToMove && (Input.GetKeyDown(crouchKey) || Input.GetKeyUp(crouchKey))) {
@@ -199,6 +209,10 @@ public class PlayerMovement : NetworkBehaviour {
 
     }
 
-
+    private IEnumerator SlideRoutine() {
+        allowedToCrouch = false;
+        
+        yield return new WaitForSeconds(1f);
+    }
 
 }
