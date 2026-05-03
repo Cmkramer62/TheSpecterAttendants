@@ -110,6 +110,17 @@ public class PlayerMovement : NetworkBehaviour {
 
         if(inputVector.magnitude > 1) {
             inputVector.Normalize();
+           
+        }
+        //playerAnimator.SetFloat("InputMagnitude", inputVector.magnitude);
+
+        if(inputVector.magnitude == 0) {
+            if(Random.Range(0, 0) == 0) playerAnimator.SetBool("IsStopRU", true);
+            else playerAnimator.SetBool("IsStopLU", true);
+        }
+        else {
+            playerAnimator.SetBool("IsStopRU", false);
+            playerAnimator.SetBool("IsStopLU", false);
         }
         playerAnimator.SetBool("Walking", horiz != 0 || vert != 0);
         if(allowedToMove)
@@ -117,7 +128,7 @@ public class PlayerMovement : NetworkBehaviour {
 
 
         // CROUCH Section
-        //cachedTransform.localScale = new Vector3(originalScale.x, Mathf.Clamp(currentHeight -= (isCrouched ? 2f : -2f) * Time.deltaTime, crouchHeight, originalScale.y), originalScale.z);
+        cachedTransform.localScale = new Vector3(originalScale.x, Mathf.Clamp(currentHeight -= (isCrouched ? 2f : -2f) * Time.deltaTime, crouchHeight, originalScale.y), originalScale.z);
         headTransform.localPosition = new Vector3(originalHeadHeight.x, Mathf.Clamp(currentHeight -= (isCrouched ? 2f : -2f) * Time.deltaTime, crouchHeight, originalHeadHeight.y), originalHeadHeight.z);
 
         if(allowedToCrouch && allowedToMove && (Input.GetKeyDown(crouchKey) || Input.GetKeyUp(crouchKey))) {

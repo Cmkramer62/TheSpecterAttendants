@@ -49,6 +49,7 @@ public class GroundChecker : MonoBehaviour {
            // Debug.Log("Landed.");
 
             AudioClip[] playingLandingClips = AssignList(false);
+           // playerAnimator.SetBool("IsJump", false);
 
             footSource.pitch = (Random.Range(0.87f, 0.93f)); //(Random.Range(0.78f, 0.87f));
             AudioClip clip = GetRandomClip(playingLandingClips);

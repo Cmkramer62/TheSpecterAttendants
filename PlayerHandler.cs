@@ -16,6 +16,7 @@ public class PlayerHandler : NetworkBehaviour {
 
     [SerializeField] private SkinnedMeshRenderer[] bodySkinnedRenderers;
     [SerializeField] private MeshRenderer[] bodyMeshRenderers;
+    [SerializeField] private Animator animatorRef;
 
     public override void OnNetworkSpawn() {
         if(!IsOwner) return;
@@ -27,6 +28,7 @@ public class PlayerHandler : NetworkBehaviour {
         cam.GetComponent<PingCreator>().playerScript = playerMovementScript;
         cam.transform.GetChild(3).GetComponent<HeadBob>().playerMovement = playerMovementScript;
         cam.GetComponent<MouseLook>().playerBody = playerMovementScript.transform;
+        cam.GetComponent<MouseLook>().cameraAnimator = animatorRef;
 
         if(ghostScript != null) {
             playerMovementScript.enemyVisionScript = ghostScript.GetComponent<ConeLOSDetector>();
