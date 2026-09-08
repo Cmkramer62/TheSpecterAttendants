@@ -16,6 +16,8 @@ public class InteractPrompt : MonoBehaviour {
     private TextPrompter textPromptScript;
     private Coroutine routine;
     private bool done = false;
+    public GameObject playerScript;
+
 
     private void OnTriggerEnter(Collider other) {
         // is the person who touched thiss client id the same as mine?
@@ -23,16 +25,18 @@ public class InteractPrompt : MonoBehaviour {
         if(touchTrigger && other.CompareTag("Player") && ((oneTime && !done) || !oneTime)
             && other.GetComponent<NetworkObject>().OwnerClientId == NetworkManager.Singleton.LocalClientId) {
 
-            InteractWithObject();
-            if(textPromptScript == null) textPromptScript = GameObject.Find("Game Manager").GetComponent<TextPrompter>();
+            playerScript = other.gameObject;
+            InteractWithObject(playerScript);
+            if(textPromptScript == null) textPromptScript = GameObject.FindAnyObjectByType<TextPrompter>();
             textPromptScript.source.PlayOneShot(interactWithSound, volumeOfPopup);
 
             if(hubTutorial) GameObject.FindAnyObjectByType<SaveDataHandler>().SetHubFirst();
         }
     }
 
-    public void InteractWithObject() {
+    public void InteractWithObject(GameObject player) {
         if((oneTime && !done) || !oneTime) {
+            playerScript = player;
             if(delay == 0f) DisplayIt();
             else {
                 if(routine != null) StopCoroutine(routine);
@@ -55,7 +59,7 @@ public class InteractPrompt : MonoBehaviour {
     }
 
     private void DisplayIt() {
-        if(textPromptScript == null) textPromptScript = GameObject.Find("Client Curse Game Manager").GetComponent<TextPrompter>();
+        if(textPromptScript == null) textPromptScript = GameObject.FindAnyObjectByType<TextPrompter>();
 
         if(!curseObjectInteract) {
             if(!list) textPromptScript.QueueTextPrompt(displayText, textSound, this);

@@ -17,7 +17,7 @@ public class GameTimer : NetworkBehaviour {
     //void GameOverClientRpc() {
     //    OnGameOver?.Invoke(); // notify local listeners
    // }
-
+    
 
     private void Update() {
         if(!IsServer || isPaused.Value) return;
@@ -29,6 +29,18 @@ public class GameTimer : NetworkBehaviour {
 
             if(timeLeft.Value > 0)
                 timeLeft.Value--;
+            else {
+                // kill all non-ghosts.
+                // this is the server. Use server/s player list. call death on all.
+                foreach(var client in NetworkManager.Singleton.ConnectedClientsList) {
+                    if(client.PlayerObject != null) {
+                        GameObject player = client.PlayerObject.gameObject;
+                        if(player != null && player.GetComponent<Death>().lives.Value > 0) {
+                            player.GetComponent<Death>().LoseRemainingLives(false);
+                        }
+                    }
+                }
+            }
         }
     }
 

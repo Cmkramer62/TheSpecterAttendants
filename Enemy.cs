@@ -50,9 +50,13 @@ public class Enemy : NetworkBehaviour {
     public List<GameObject> playersVisible = new List<GameObject>();
     #endregion
 
-
-
-
+    // This is called by CurseGameManager, moves the ghost to its spawn position.
+    [ClientRpc]
+    public void SetSpawnPositionClientRpc(Vector3 position, Quaternion rotation) {
+        GetComponent<NavMeshAgent>().enabled = false;
+        transform.position = position;
+        GetComponent<NavMeshAgent>().enabled = true;
+    }
 
     void RefreshPlayerList() {
         listOfPlayers.Clear();
@@ -63,7 +67,6 @@ public class Enemy : NetworkBehaviour {
                 if(player != null) listOfPlayers.Add(player);
             }
         }
-
     }
 
     private void OnClientConnected(ulong clientId) {
@@ -79,7 +82,6 @@ public class Enemy : NetworkBehaviour {
         listOfPlayers.RemoveAll(player => player == null ||
             player.GetComponent<NetworkObject>().OwnerClientId == clientId);
 
-        // GetComponent<ConeLOSDetector>().SetMyList();
         GetComponent<ConeLOSDetector>().SetGhostsListOnDisconnects(listOfPlayers);
     }
 
@@ -91,9 +93,6 @@ public class Enemy : NetworkBehaviour {
         cachedTransform = gameObject.transform;
         walkSpeedOG = walkSpeed;
 
-        // Is Invisible is a synced variable, so when the server version of the ghost
-        // changes it, the client version's will change too automatically.
-
         if(IsServer) {
             RefreshPlayerList();
             GetComponent<ConeLOSDetector>().SetMyList();
@@ -104,12 +103,13 @@ public class Enemy : NetworkBehaviour {
             NetworkManager.Singleton.OnClientDisconnectCallback += OnClientDisconnected;
             playerLastSeen.Value = playerLastSeemMarker;
         }
-        invisible.OnValueChanged += (_, newState) =>
-        {
+        invisible.OnValueChanged += (_, newState) => {
             InvertVisibility(newState);
         };
 
-        if(IsServer) invisible.Value = true;
+        if(IsServer) {
+            invisible.Value = true;
+        }
         InvertVisibility(invisible.Value);
     }
 
@@ -132,7 +132,7 @@ public class Enemy : NetworkBehaviour {
 
     // Returns the closest player out of a subset parameter.
     private GameObject ClosestPlayer(List<GameObject> targetSubset) {
-        float minDist = 99999;
+        float minDist = 9999;
         GameObject closestPlayer = targetSubset[0];
         for(int i = 1; i < targetSubset.Count; i++) {
             float distanceToTest = Vector3.Distance(targetSubset[i].transform.position, closestPlayer.transform.position);
@@ -145,28 +145,23 @@ public class Enemy : NetworkBehaviour {
         return closestPlayer;
     }
 
-    // Returns the closest player only out of the ones the ghost can see.
+    // Returns the closest player in ghost's vision.
+    // If the ghost can't see anyone, returns the player that is closest.
     public GameObject SeenAndClosestPlayer() {
-        // These are the players we see:
         playersVisible = new List<GameObject>();
-        // coneDetector.TargetTransforms();
-        //string results = "visiplayers: ";
         foreach(GameObject player in listOfPlayers) {
-            //results = results + player.transform.position.ToString() + "-" + coneDetector.SeeParticularTarget(player.transform) + "...";
-            if(player.GetComponent<Death>().lives.Value > 0 && coneDetector.SeeParticularTarget(player.transform)) playersVisible.Add(player);
+            if(player.GetComponent<Death>().lives.Value > 0 && coneDetector.SeeParticularTarget(player.transform)) {
+                playersVisible.Add(player);
+            }
         }
-        //Debug.Log(results);
         if(playersVisible.Count > 0) {
             // Now this is the closest from among them:
             return ClosestPlayer(playersVisible);
         }
         else {
-            // If we can't see anyone, this is simply the player that is closest.
             return ClosestPlayer(listOfPlayers);
         }
-        
     }
-
 
     // Update is called once per frame
     private void Update() {
@@ -461,7 +456,6 @@ public class Enemy : NetworkBehaviour {
     }
 
     public void IncreaseCharges() {
-        //Debug.Log("Increasing Charges. " + aggressionCharges.Value);
         aggressionCharges.Value += 1;
     }
 
@@ -562,6 +556,9 @@ public class Enemy : NetworkBehaviour {
             aggressionCharges.Value--;
             if(aggressionCharges.Value < 0) aggressionCharges.Value = 0;
            // Debug.Log("lowering from attacking a player.");
+        }
+        else {
+            animator.SetBool("Attack", false);
         }
 
     }

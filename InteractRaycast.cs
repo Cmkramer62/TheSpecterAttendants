@@ -35,7 +35,8 @@ public class InteractRaycast : NetworkBehaviour {
         CrosshairType currentRaycastedType;
 
         if(playerAlive && allowedToRaycast && Physics.Raycast(transform.position, fwd, out hit, rayLength, mask) && LayerMask.LayerToName(hit.transform.gameObject.layer) == hitLayerName) {
-            //crosshairUI.SetActive(true);
+
+            // This also finds grandchildren.
             if(hit.transform.CompareTag("CursedObject")) curseScript = hit.transform.GetComponentInChildren<CursedObject>();
 
             // CROSSHAIR SECTION
@@ -48,7 +49,6 @@ public class InteractRaycast : NetworkBehaviour {
                 else currentRaycastedType = CrosshairType.InteractLiving;
             }
             
-
             // INPUT SECTION
             if(Input.GetKeyDown(KeyCode.E)) {
                 source.PlayOneShot(clip, volumeOfClick);
@@ -60,18 +60,19 @@ public class InteractRaycast : NetworkBehaviour {
                     case "Generic":
                         if(!afterlife) {
                             InteractPrompt seenPrompt = hit.transform.GetComponent<InteractPrompt>();
-                            seenPrompt.InteractWithObject();
+                            seenPrompt.InteractWithObject(GetComponent<MouseLook>().playerBody.gameObject);
                             if(seenPrompt.list) source.PlayOneShot(seenPrompt.interactWithSound, volumeOfClick);
                         }
                         break;
                     case "CursedObject":
                         if(!afterlife && GetComponent<MouseLook>().playerBody != null && GetComponent<MouseLook>().playerBody.GetComponent<ToolController>().heldIndex.Value == 0) {
-                            //InteractPrompt seenPrompt2 = hit.transform.GetComponent<InteractPrompt>();
-                            //seenPrompt2.InteractWithObject();
-                            //if(seenPrompt2.list) source.PlayOneShot(seenPrompt2.interactWithSound, volumeOfClick);
-
                             // something something purification manager, something something client side hears that..
-
+                            if(curseScript.goalCurse.Value == true) {
+                                EndPortal.Instance. EndGame();
+                            }
+                            else {
+                                deathScript.LoseRemainingLives(false);
+                            }
 
                         }
                         break;
@@ -151,7 +152,7 @@ public class InteractRaycast : NetworkBehaviour {
             else if((Input.GetKeyUp(KeyCode.E) && deathScript.channelingLife) || GetComponent<MouseLook>().playerBody.GetComponent<ToolController>().heldIndex.Value != 0) {
                 deathScript.channelingLife = false; // UNOPTIMIZED?
                 deathScript.playerArmsAnimator.SetBool("Channeling", false);
-                Debug.Log("channel trigger off");
+               // Debug.Log("channel trigger off");
                 deathScript.GetComponent<PlayerHandler>().channelParticles.Stop();
                 if(deathScript.channelSourceThreeDim.isPlaying) AudioController.FadeOutAudio(this, deathScript.channelSourceThreeDim, 2f);
             }
@@ -164,7 +165,7 @@ public class InteractRaycast : NetworkBehaviour {
             if(deathScript != null && deathScript.channelingLife) {
                 deathScript.channelingLife = false; // UNOPTIMIZED?
                 deathScript.playerArmsAnimator.SetBool("Channeling", false);
-                Debug.Log("channel trigger off");
+              //  Debug.Log("channel trigger off");
                 deathScript.GetComponent<PlayerHandler>().channelParticles.Stop();
                 if(deathScript.channelSourceThreeDim.isPlaying) AudioController.FadeOutAudio(this, deathScript.channelSourceThreeDim, 2f);
 

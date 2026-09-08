@@ -16,7 +16,7 @@ public class TextPrompter : MonoBehaviour {
     public AudioClip enterClip;
     public InteractRaycast raycastScript; // This is so we have a reference to raycast's clickVolume, (LMB1).
 
-    private InteractPrompt promptScriptCurrent;
+    public InteractPrompt promptScriptCurrent;
 
     public void Update() {
         if(waitingForResponse && (Input.GetKeyDown(KeyCode.Return) || Input.GetKeyDown(KeyCode.Mouse0))) {
@@ -25,10 +25,7 @@ public class TextPrompter : MonoBehaviour {
                 if(routine != null) StopCoroutine(routine);
                 routine = StartCoroutine(StopPromptTimer(0));
                 //textBackground.GetComponent<Animator>().Play("FadeIn 0");
-                if(promptScriptCurrent != null) {
-                    promptScriptCurrent.EndEffect();
-                    promptScriptCurrent = null;
-                }
+
             }
             else {
                 Debug.Log("Tried to play " + currentList[index]);
@@ -40,13 +37,14 @@ public class TextPrompter : MonoBehaviour {
     }
 
     public void QueueTextPrompt(string text, AudioClip textClip, InteractPrompt promptScript) {
+        promptScriptCurrent = promptScript;
         QueueTextPrompt(text, textClip);
-        promptScript.EndEffect();
+        promptScriptCurrent.EndEffect();
     }
 
     public void QueueTextPrompt(string[] text, AudioClip textClip, InteractPrompt promptScript) {
-        QueueTextPrompt(text, textClip);
         promptScriptCurrent = promptScript;
+        QueueTextPrompt(text, textClip);
     }
 
     public void QueueTextPrompt(string text, AudioClip textClip) {
@@ -92,8 +90,10 @@ public class TextPrompter : MonoBehaviour {
         textAdderScript.CancelText();
         textAdderScript.endWord = text;
         textAdderScript.StartAddingText();
-        GameObject.Find("Player").GetComponent<PlayerMovement>().allowedToMove = false;
-        Camera.main.gameObject.GetComponent<MouseLook>().allowedToLook = false;
+        //GameObject.Find("Player").GetComponent<PlayerMovement>().allowedToMove = false;
+        //Camera.main.gameObject.GetComponent<MouseLook>().allowedToLook = false;
+        promptScriptCurrent.playerScript.GetComponent<Death>().SetPlayerPermsIgnoreHands(false);
+
         layerCurrent = gameObject.layer;
         gameObject.layer = 0;
         enterUI.SetActive(true);
@@ -105,11 +105,17 @@ public class TextPrompter : MonoBehaviour {
         textAdderScript.CancelText();
         GetComponent<PauseGame>().allowedToPause = true;
         GetComponent<PauseGame>().allowedToQuestionPause = true;
-        GameObject.Find("Player").GetComponent<PlayerMovement>().allowedToMove = true;
-        Camera.main.gameObject.GetComponent<MouseLook>().allowedToLook = true;
+        // GameObject.Find("Player").GetComponent<PlayerMovement>().allowedToMove = true;
+        // Camera.main.gameObject.GetComponent<MouseLook>().allowedToLook = true;
+
+        promptScriptCurrent.playerScript.GetComponent<Death>().SetPlayerPermsIgnoreHands(true);
         gameObject.layer = layerCurrent;
         enterUI.SetActive(false);
         textBackground.GetComponent<Animator>().Play("FadeIn 0");
+        if(promptScriptCurrent != null) {
+            promptScriptCurrent.EndEffect();
+            promptScriptCurrent = null;
+        }
         yield return new WaitForSeconds(1f);
         textBackground.SetActive(false);
     }

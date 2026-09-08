@@ -9,11 +9,18 @@ using Unity.Netcode;
 
 public class PurificationManager : NetworkBehaviour {
 
+    // 1. The static reference accessible from anywhere
+    public static PurificationManager Instance { get; private set; } // Public get, private set prevents overwriting
+
+
     public List<GameObject> listOfPlayers = new List<GameObject>();
     public NetworkVariable<int> totalLives = new NetworkVariable<int>(0);
     //  public int totalLives = 0;
 
     public override void OnNetworkSpawn() {
+        if(Instance == null)
+            Instance = this;
+
         if(!IsServer)
             return;
 
@@ -30,6 +37,9 @@ public class PurificationManager : NetworkBehaviour {
         }
     }
 
+
+
+    #region LIFE tracking
     void RefreshPlayerList() {
         listOfPlayers.Clear();
 
@@ -83,4 +93,5 @@ public class PurificationManager : NetworkBehaviour {
             MultiplayerManager.Instance.LeaveGame();
         }
     }
+    #endregion
 }

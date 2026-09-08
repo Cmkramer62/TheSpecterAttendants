@@ -68,6 +68,10 @@ public class CurseGameManagerClient : MonoBehaviour {
     }
 
     private void RemovePropItem(int i) {
+        if(i < 0 || i >= spawnPoints.Count) {
+            Debug.Log("PROP REMOVAL HAD ERROR: " + i);
+            return;
+        }
         Debug.Log("--Called prop removal. index: " + i + ". spawnpoints[i].name = " + spawnPoints[i].transform.gameObject.name);
         if(spawnPoints[i].transform.gameObject.name == "Spawnpoint A1") {
             spawnPoints[i].transform.parent.transform.Find("Item A1").gameObject.SetActive(false);

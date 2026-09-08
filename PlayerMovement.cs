@@ -35,7 +35,7 @@ public class PlayerMovement : NetworkBehaviour {
     public ConeLOSDetector enemyVisionScript;
     #region SOUND VARIABLES
     public AudioSource source;
-    public AudioClip breathClip, crouchClip, ghostJump;
+    public AudioClip breathClip, crouchClip, ghostJump, slideClip;
     public AudioClip[] jumpClip;
     #endregion
 
@@ -116,11 +116,21 @@ public class PlayerMovement : NetworkBehaviour {
 
     public void Crouch() {
         Debug.Log("Crouch called.");
-        source.PlayOneShot(crouchClip);
+        CrouchEffectsServerRpc();
         speed = isCrouched ? originalSpeed : crouchingSpeed;
         currentHeight = isCrouched ? crouchHeight : originalHeadHeight.y;
         //enemyVisionScript.fieldOfViewAngle += isCrouched ? 30 : -30;
         isCrouched = !isCrouched;
+    }
+
+    [ServerRpc]
+    private void CrouchEffectsServerRpc() {
+        CrouchEffectsClientRpc();
+    }
+
+    [ClientRpc]
+    private void CrouchEffectsClientRpc() {
+        source.PlayOneShot(crouchClip);
     }
 
     private void Jump() {
@@ -257,9 +267,8 @@ public class PlayerMovement : NetworkBehaviour {
         allowedToCrouch = false;
         //allowedToMove = false;
         //isCrouched = true;
-        Debug.Log("PLAYING DAMN FEATHERS.");
-        feathersVFXA.Play();
-        feathersVFXB.Play();
+
+        SlideEffectsServerRpc();
 
         Crouch();
 
@@ -268,11 +277,35 @@ public class PlayerMovement : NetworkBehaviour {
         //isCrouched = false;
 
         Crouch();
-        feathersVFXA.Stop();
-        feathersVFXB.Stop();
+        StopSlideEffectsServerRpc();
         allowedToCrouch = true;
         //allowedToMove = true;
         transform.parent.GetComponent<PlayerHandler>().stamina.Value = 0;
+    }
+
+    [ServerRpc]
+    private void SlideEffectsServerRpc() {
+        SlideEffectsClientRpc();
+    }
+
+    [ClientRpc]
+    private void SlideEffectsClientRpc() {
+        Debug.Log("PLAYING DAMN FEATHERS.");
+        feathersVFXA.Play();
+        feathersVFXB.Play();
+        source.PlayOneShot(slideClip);
+    }
+
+    [ServerRpc]
+    private void StopSlideEffectsServerRpc() {
+        StopEffectsClientRpc();
+    }
+
+
+    [ClientRpc]
+    private void StopEffectsClientRpc() {
+        feathersVFXA.Stop();
+        feathersVFXB.Stop();
     }
 
     private IEnumerator SlideCooldown() {

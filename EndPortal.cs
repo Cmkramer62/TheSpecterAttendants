@@ -17,6 +17,14 @@ public class EndPortal : MonoBehaviour {
     public Enemy ghostScript;
 
     public SaveDataHandler saveSystem;
+    // 1. The static reference accessible from anywhere
+    public static EndPortal Instance { get; private set; } // Public get, private set prevents overwriting
+
+    private void Awake() {
+        if(Instance == null)
+            Instance = this;
+    }
+
 
     private void OnTriggerEnter(Collider other) {
         if(activated && other.name == "Player") {
@@ -33,9 +41,43 @@ public class EndPortal : MonoBehaviour {
 
     private void OnTriggerExit(Collider other) {
         if(other.name == "Player") {
-            GetComponent<InteractPrompt>().InteractWithObject();
+            GetComponent<InteractPrompt>().InteractWithObject(other.gameObject);
             source.PlayOneShot(leaveClip);
         }   
+    }
+
+    public void EndGame() {
+        StartCoroutine(EndGoalSequence());
+    }
+
+    private IEnumerator EndGoalSequence() {
+        //purificationScript.GetComponent<CurseGameManager>().purifyState = purificationScript.potentialCursedItem.name == "Goal Curse" ? enterClip : enterWrongClip
+        source.PlayOneShot(enterClip);
+
+        yield return new WaitForSeconds(1f);
+
+        //saveSystem.SetMissionData(1, purificationScript.GetComponent<CurseGameManager>().timeSpent, purificationScript.GetComponent<Death>().lives.Value,
+           // purificationScript.GetComponent<CurseGameManager>().timeSpotted, purificationScript.GetComponent<CurseGameManager>().longestChase, purificationScript.GetComponent<CurseGameManager>().purifyState);
+
+        portalAnimation.Play("WipeAwayAnim");
+        source.PlayOneShot(correctClip);
+        yield return new WaitForSeconds(.5f);
+        ghostScript = GameObject.FindAnyObjectByType<Enemy>();
+        ghostScript.allowedToMove.Value = false;
+        for(int i = 0; i < ghostScript.gameObject.transform.childCount; i++) {
+            if(ghostScript.transform.GetChild(i).gameObject.activeSelf) {
+                Debug.Log(ghostScript.transform.GetChild(i).name);
+                ghostScript.transform.GetChild(i).GetComponent<Animator>().SetTrigger("Death");
+                ghostScript.GetComponent<NavMeshAgent>().speed = 0;
+                //ghostSource.PlayOneShot(ghostDeathClip); 
+                break;
+            }
+        }
+        //ghostScript.GetComponent<Animator>().SetTrigger("Death");
+            
+        yield return new WaitForSeconds(7f);
+        MultiplayerManager.Instance.LeaveGame();
+
     }
 
     private IEnumerator EndGoalTimer() {

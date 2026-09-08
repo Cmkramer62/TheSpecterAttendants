@@ -43,6 +43,7 @@ public class Death : NetworkBehaviour {
     public float lifeChannelAmount, lifeChannelRecoveryRate, lifeChannelDuration;
 
     public PurificationManager purificationManagerScript;
+    private int lastStoredTool = 0;
 
     public override void OnNetworkSpawn() {        
         afterlifePlayer.OnValueChanged += OnAfterlifeChanged;
@@ -153,7 +154,6 @@ public class Death : NetworkBehaviour {
         else AudioController.FadeOutAudio(this, musicSourceB, .5f);
         if(IsServer) SetBodyMaterialsClientRpc(false); // do this false when..?
         else SetBodyMaterialsServerRpc(false);
-        GetComponent<ToolController>().ForceToPrevhand(0);
     }
     #endregion
 
@@ -204,6 +204,33 @@ public class Death : NetworkBehaviour {
         }
     }
 
+    public void LoseRemainingLives(bool ghostAttack) {
+        AssignPurificationReference();
+
+        twoDimAudioSource.PlayOneShot(hitDamageClip);
+        if(playerController.GetComponent<PlayerMovement>().isHiding) {
+            foreach(HidingSpot spot in GameObject.FindObjectsByType<HidingSpot>(FindObjectsSortMode.None)) {
+                if(spot.hidingHere.Value && spot.MatchesPlayer(NetworkManager.Singleton.LocalClientId)) {
+                    spot.Unhide();
+                }
+            }
+        }
+        int whatLivesWillBe = lives.Value - lives.Value;
+        LoseAllLivesServerRpc(); // may take time to register the rpc after this.
+        twoDimAudioSource.PlayOneShot(stingerClips[whatLivesWillBe]); // I inverted this, invert the sound list.
+        GetComponent<Animator>().SetBool("Dead", true); // Synced?
+        if(ghostAttack) playerArmsAnimator.SetTrigger("DyingFromGhost");
+        else playerArmsAnimator.SetTrigger("DyingFromAngel");
+        SetPlayerPerms(false);
+
+        Jumpscare(!ghostAttack);
+
+        // IF there are more lives/people left, then transition to a ghost. Otherwise...death UI?
+        if(purificationManagerScript.totalLives.Value >= 2) {
+            StartCoroutine(AfterlifeSequence());
+        }
+    }
+
     private void AssignPurificationReference() {
         if(purificationManagerScript == null) {
             purificationManagerScript = GameObject.FindAnyObjectByType<PurificationManager>();
@@ -213,6 +240,11 @@ public class Death : NetworkBehaviour {
     [ServerRpc (RequireOwnership = false)]
     private void LoseLifeServerRpc() {
         lives.Value--;
+    }
+
+    [ServerRpc(RequireOwnership = false)]
+    private void LoseAllLivesServerRpc() {
+        lives.Value -= lives.Value;
     }
 
     [ServerRpc(RequireOwnership = false)]
@@ -359,30 +391,40 @@ public class Death : NetworkBehaviour {
 
 
     // SetPlayerPerms Activates or deactivates player permissions.
-    private void SetPlayerPerms(bool state) {
-        // No movement input. 1*
-        // No camera movement input. 2*
-        // No tool/ability input. 3*
-        // Disable hand visuals. 4*
-        // No allowing input (F/LMB) for Interact Raycast. 5*
-        // No crosshair allowed.
-        // Turn off Normal UI, and Pause UI if it was on. (players can still pause though?)
-        // Stop timer?
-
+    public void SetPlayerPerms(bool state) {
+        // Movement
         GetComponentInChildren<PlayerMovement>().playerAlive = state;
-        CameraFollow cameraReference = GetComponent<PlayerHandler>().cameraReference;
-        cameraReference.GetComponent<MouseLook>().playerAlive = state; // 2
-        if(!state) GetComponent<ToolController>().ForceToBarehand();
-        GetComponent<ToolController>().playerAlive = state; // 3
 
-        cameraReference.GetComponent<InteractRaycast>().playerAlive = state; // 5
-        // playerController.GetComponent<PlayerMovement>().enabled = state;
-        //Cursor.lockState = CursorLockMode.None;
-        //GetComponent<PauseGame>().normalUI.SetActive(false);
-        //GetComponent<PauseGame>().pausedUI.SetActive(false);
+        // Camera Look
+        CameraFollow cameraReference = GetComponent<PlayerHandler>().cameraReference;
+        cameraReference.GetComponent<MouseLook>().playerAlive = state;
+        cameraReference.GetComponent<InteractRaycast>().playerAlive = state;
+
+        // Tool Usage
+        if(!state) {
+            lastStoredTool = GetComponent<ToolController>().heldIndex.Value;
+            GetComponent<ToolController>().ForceToBarehand();
+        }
+        else {
+            GetComponent<ToolController>().ForceToPrevhand(lastStoredTool);
+        }
+        GetComponent<ToolController>().playerAlive = state;
+
+        // Pass Through walls
         if(state) {
             GetComponentInChildren<CapsuleCollider>().enabled = true;
         }
+    }
+    
+    public void SetPlayerPermsIgnoreHands(bool state) {
+        // Movement
+        GetComponentInChildren<PlayerMovement>().playerAlive = state;
+        // Camera Look
+        CameraFollow cameraReference = GetComponent<PlayerHandler>().cameraReference;
+        cameraReference.GetComponent<MouseLook>().playerAlive = state;
+        cameraReference.GetComponent<InteractRaycast>().playerAlive = state;
+        // Tool Usage
+        GetComponent<ToolController>().playerAlive = state;
     }
 
     // SetPlayerGhostPerms Activates a specific restricted permission set, allowing the player to do some things.

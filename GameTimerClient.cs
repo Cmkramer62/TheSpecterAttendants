@@ -75,11 +75,18 @@ public class GameTimerClient : MonoBehaviour {
             c.a = Mathf.Lerp(c.a, .8f, Time.deltaTime / serverTimer.timeLeft.Value * .25f);
             smokeMaterial.color = c;
         }
+
+        if(serverTimer.timeLeft.Value <= 0) {
+            vignetteComponent.intensity.value = 0f;
+            Color c = smokeMaterial.color;
+            c.a = 0f;
+            smokeMaterial.color = c;
+        }
     }
 
     private void OnTimeChanged(int initialValue, int newValue) {
         timeSpent++;
-        Debug.Log("Time changed: " + newValue);
+       // Debug.Log("Time changed: " + newValue);
 
         //GetComponent<CurseGameManager>().timeSpent = timeSpent;
 

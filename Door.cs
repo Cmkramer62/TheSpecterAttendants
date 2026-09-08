@@ -34,7 +34,7 @@ public class Door : MonoBehaviour {
             source.Stop();
             source.pitch = Random.Range(.9f, 1.1f);
             source.PlayOneShot(lockedClip);
-            GetComponent<InteractPrompt>().InteractWithObject();
+            //GetComponent<InteractPrompt>().InteractWithObject(will need to pass the player ref through this method param);
         }
     }
 

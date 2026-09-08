@@ -77,14 +77,13 @@ public class CurseGameManager : NetworkBehaviour {
             PopulateSpawnPoints();
 
             ghostReference = GameObject.Instantiate(ghostPrefab); // where?
-            Transform spawn = GetSpawnPoint();
-            ghostReference.transform.SetPositionAndRotation(
-                spawn.position,
-                spawn.rotation
-            );
 
-           // ghostReference.GetComponent<GhostRandomizer>().serverGameManagerScript = this;
+            //ghostReference.transform.SetPositionAndRotation(spawn.position, spawn.rotation);
+
+            // ghostReference.GetComponent<GhostRandomizer>().serverGameManagerScript = this;
+            StartCoroutine(PlaceGhostWhenReady());
             ghostReference.GetComponent<NetworkObject>().Spawn();
+            
             ghostReference.GetComponent<Enemy>().musicSource = curseManagerClientScript.musicSource;
             ghostReference.GetComponent<Enemy>().allowedToMove.Value = true;
         }
@@ -114,6 +113,21 @@ public class CurseGameManager : NetworkBehaviour {
                 else curseSpawnBuffer++;
             }
         }
+    }
+
+    private IEnumerator PlaceGhostWhenReady() {
+        NetworkObject ghostObj = null;
+
+        while(ghostObj == null) {
+            if(ghostReference != null)
+                ghostObj = ghostReference.GetComponent<NetworkObject>();
+
+            yield return null;
+        }
+
+        Transform spawn = GetSpawnPoint();
+
+        ghostObj.GetComponent<Enemy>().SetSpawnPositionClientRpc(spawn.position, spawn.rotation);
     }
 
     private void PopulateSpawnPoints() {

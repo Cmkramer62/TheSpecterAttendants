@@ -66,7 +66,8 @@ public class PlayerHandler : NetworkBehaviour {
     [ClientRpc]
     public void SetSpawnPositionClientRpc( Vector3 position, Quaternion rotation, ClientRpcParams clientRpcParams = default) {
         GetComponent<CharacterController>().enabled = false;
-        transform.SetPositionAndRotation(position, rotation);
+        //transform.SetPositionAndRotation(position, rotation);
+        transform.position = position;
         GetComponent<CharacterController>().enabled = true;
     }
 
